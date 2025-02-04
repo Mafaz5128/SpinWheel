@@ -17,7 +17,15 @@ html_code = """
         body { text-align: center; font-family: Arial, sans-serif; }
         .wheel-container { position: relative; display: inline-block; }
         .wheel { width: 300px; height: 300px; border-radius: 50%; border: 5px solid #ff4081; }
-        .pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; background: red; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .pointer {
+            position: absolute;
+            top: -10px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid red;
+        }
         button { padding: 12px 20px; font-size: 18px; background: #ff4081; color: white; border: none; cursor: pointer; margin-top: 15px; border-radius: 5px; }
         button:hover { background: #ff0055; }
         #result { font-size: 20px; font-weight: bold; margin-top: 10px; }
@@ -45,7 +53,7 @@ html_code = """
             ctx.save();
             ctx.translate(150, 150);
             ctx.rotate(rotationAngle);
-            
+
             let startAngle = 0;
             for (let i = 0; i < prizes.length; i++) {
                 ctx.beginPath();
@@ -71,7 +79,7 @@ html_code = """
         function spinWheel() {
             if (spinning) return;
             spinning = true;
-            let totalRotation = Math.floor(Math.random() * 360) + 360 * 5;  
+            let totalRotation = Math.random() * 360 + 360 * 5;  
             let spinTime = 3000;
             let startTime = null;
 
@@ -86,8 +94,8 @@ html_code = """
                     requestAnimationFrame(rotate);
                 } else {
                     spinning = false;
-                    let finalAngle = (totalRotation % 360) * (Math.PI / 180);
-                    let prizeIndex = Math.floor((360 - (finalAngle * 180 / Math.PI)) / (360 / prizes.length)) % prizes.length;
+                    let finalAngle = (angle % (2 * Math.PI));  
+                    let prizeIndex = Math.floor(((2 * Math.PI) - finalAngle) / sliceAngle) % prizes.length;
                     document.getElementById("result").innerText = "🎉 You won: " + prizes[prizeIndex] + "!";
                 }
             }
