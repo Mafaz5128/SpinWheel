@@ -158,7 +158,7 @@ with st.form("spin_form"):
             st.components.v1.html(spin_wheel_html, height=600)
 
             # Handle Winner Data (Python backend)
-            winner_data = st.experimental_get_query_params().get("winner", None)
+            winner_data = st.query_params.get("winner", None)
             if winner_data:
                 prize = winner_data[0]
                 save_winner(name, phone, prize)
