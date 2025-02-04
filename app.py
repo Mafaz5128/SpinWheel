@@ -87,11 +87,12 @@ if st.session_state.get("can_spin", False):
     if st.button("Spin the Wheel 🎡"):
         with st.spinner("Spinning the wheel..."):
             angle = 0
-            for _ in range(30):  # Simulating rotation animation
+            for _ in range(50):  # More frames for smoother animation
                 angle += random.randint(10, 30)
+                angle = angle % 360  # Keep angle within bounds
                 buf = draw_wheel(angle)
                 st.image(buf)
-                time.sleep(0.1)
+                time.sleep(0.05)  # Faster frame rate for smoother animation
             
             selected_prize = random.choice(prizes)
             st.session_state["winner_prize"] = selected_prize
