@@ -3,9 +3,7 @@ import sqlite3
 import pandas as pd
 import random
 import time
-import matplotlib.pyplot as plt
-import numpy as np
-from io import BytesIO
+import streamlit.components.v1 as components
 
 # Initialize SQLite database
 def init_db():
@@ -59,7 +57,7 @@ with st.form("spin_form"):
     name = st.text_input("Enter Your Name", placeholder="John Doe")
     phone = st.text_input("Enter Your Phone Number", placeholder="123-456-7890")
     submitted = st.form_submit_button("Proceed to Spin")
-    
+
 if submitted:
     if not name or not phone:
         st.error("Please enter both your name and phone number.")
@@ -69,37 +67,174 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-# Function to Draw and Display Spinning Wheel
-def draw_wheel(angle):
-    fig, ax = plt.subplots(figsize=(5, 5), subplot_kw={'aspect': 'equal'})
-    wedges, texts = ax.pie([1] * len(prizes), labels=prizes, colors=colors, startangle=angle, counterclock=False, wedgeprops={"edgecolor": "black"})
-    
-    # Draw the arrow indicator
-    ax.annotate("", xy=(0, 1.1), xytext=(0, 1.5), arrowprops=dict(arrowstyle="->", color='red', lw=2))
-    
-    buf = BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    return buf
+# HTML + JavaScript for Spin Wheel (Updated Version)
+html_code = """
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .wheel-container { position: relative; display: inline-block; }
+        .pointer {
+            position: absolute;
+            top: -20px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid red;
+            z-index: 10;
+        }
+        canvas {
+            border-radius: 50%;
+            border: 5px solid #ff4081;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 18px;
+            background: #ff4081;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        button:hover { background: #ff0055; }
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="400" height="400"></canvas>
+    </div>
+    <br>
+    <button id="spin">🎰 Spin the Wheel</button>
+    <p id="result"></p>
 
-# Display the Spin Wheel
-if st.session_state.get("can_spin", False):
-    if st.button("Spin the Wheel 🎡"):
-        with st.spinner("Spinning the wheel..."):
-            # Spin animation (multiple frames)
-            angle = 0
-            for _ in range(50):  # More frames for smoother animation
-                angle += random.randint(10, 30)
-                angle = angle % 360  # Keep angle within bounds
-                buf = draw_wheel(angle)
-                st.image(buf)
-                time.sleep(0.05)  # Faster frame rate for smoother animation
+    <script>
+        const sectors = [
+            { color: "#FFBC03", text: "#333333", label: "Sweets" },
+            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
+            { color: "#FFBC03", text: "#333333", label: "Sweets" },
+            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
+            { color: "#FFBC03", text: "#333333", label: "Sweets + Prize draw" },
+            { color: "#FF5A10", text: "#333333", label: "You lose" },
+            { color: "#FFBC03", text: "#333333", label: "Prize draw" },
+            { color: "#FF5A10", text: "#333333", label: "Sweets" }
+        ];
 
-            # Select a prize randomly and save the winner
-            selected_prize = random.choice(prizes)
-            st.session_state["winner_prize"] = selected_prize
-            save_winner(st.session_state["player_name"], st.session_state["player_phone"], selected_prize)
-            st.success(f"🎉 Congratulations {st.session_state['player_name']}, you won a {selected_prize}! 🎉")
+        const events = {
+            listeners: {},
+            addListener: function (eventName, fn) {
+                this.listeners[eventName] = this.listeners[eventName] || [];
+                this.listeners[eventName].push(fn);
+            },
+            fire: function (eventName, ...args) {
+                if (this.listeners[eventName]) {
+                    for (let fn of this.listeners[eventName]) {
+                        fn(...args);
+                    }
+                }
+            }
+        };
+
+        const rand = (m, M) => Math.random() * (M - m) + m;
+        const tot = sectors.length;
+        const spinEl = document.querySelector("#spin");
+        const canvas = document.querySelector("#wheel");
+        const ctx = canvas.getContext("2d");
+        const dia = canvas.width;
+        const rad = dia / 2;
+        const PI = Math.PI;
+        const TAU = 2 * PI;
+        const arc = TAU / sectors.length;
+
+        const friction = 0.991;
+        let angVel = 0;
+        let ang = 0;
+        let spinButtonClicked = false;
+
+        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
+
+        function drawSector(sector, i) {
+            const ang = arc * i;
+            ctx.save();
+
+            // COLOR
+            ctx.beginPath();
+            ctx.fillStyle = sector.color;
+            ctx.moveTo(rad, rad);
+            ctx.arc(rad, rad, rad, ang, ang + arc);
+            ctx.lineTo(rad, rad);
+            ctx.fill();
+
+            // TEXT
+            ctx.translate(rad, rad);
+            ctx.rotate(ang + arc / 2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = sector.text;
+            ctx.font = "bold 20px 'Lato', sans-serif";
+            ctx.fillText(sector.label, rad - 10, 10);
+
+            ctx.restore();
+        }
+
+        function rotate() {
+            const sector = sectors[getIndex()];
+            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+
+            spinEl.textContent = !angVel ? "SPIN" : sector.label;
+            spinEl.style.background = sector.color;
+            spinEl.style.color = sector.text;
+        }
+
+        function frame() {
+            if (!angVel && spinButtonClicked) {
+                const finalSector = sectors[getIndex()];
+                events.fire("spinEnd", finalSector);
+                spinButtonClicked = false;
+                return;
+            }
+
+            angVel *= friction;
+            if (angVel < 0.002) angVel = 0;
+            ang += angVel;
+            ang %= TAU;
+            rotate();
+        }
+
+        function engine() {
+            frame();
+            requestAnimationFrame(engine);
+        }
+
+        function init() {
+            sectors.forEach(drawSector);
+            rotate();
+            engine();
+            spinEl.addEventListener("click", () => {
+                if (!angVel) angVel = rand(0.25, 0.45);
+                spinButtonClicked = true;
+            });
+        }
+
+        init();
+
+        events.addListener("spinEnd", (sector) => {
+            document.getElementById("result").innerText = `🎉 You won: ${sector.label}`;
+        });
+    </script>
+</body>
+</html>
+"""
+
+# Embed the updated HTML code for Spin Wheel
+components.html(html_code, height=500)
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
