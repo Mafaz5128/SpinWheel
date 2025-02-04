@@ -18,7 +18,7 @@ html_code = """
         .wheel-container { position: relative; display: inline-block; }
         .pointer {
             position: absolute;
-            top: -10px; left: 50%;
+            top: -20px; left: 50%;
             transform: translateX(-50%);
             width: 0; height: 0;
             border-left: 15px solid transparent;
@@ -46,6 +46,7 @@ html_code = """
             font-weight: bold;
             color: white;
             z-index: 1;
+            transform-origin: 100% 100%;
         }
         .wheel-slice:nth-child(1) { background-color: #ffcccb; transform: rotate(0deg); }
         .wheel-slice:nth-child(2) { background-color: #ff4081; transform: rotate(72deg); }
@@ -75,11 +76,11 @@ html_code = """
     <div class="wheel-container">
         <div class="pointer"></div>
         <div id="wheel" class="wheel">
-            <div class="wheel-slice">💄 Free Lipstick</div>
-            <div class="wheel-slice">🛍️ 10% Off</div>
-            <div class="wheel-slice">💖 Free Gift</div>
-            <div class="wheel-slice">🎁 20% Off</div>
-            <div class="wheel-slice">💌 Thank You</div>
+            <div class="wheel-slice" style="transform: rotate(0deg) translateY(-50%)">💄 Free Lipstick</div>
+            <div class="wheel-slice" style="transform: rotate(72deg) translateY(-50%)">🛍️ 10% Off</div>
+            <div class="wheel-slice" style="transform: rotate(144deg) translateY(-50%)">💖 Free Gift</div>
+            <div class="wheel-slice" style="transform: rotate(216deg) translateY(-50%)">🎁 20% Off</div>
+            <div class="wheel-slice" style="transform: rotate(288deg) translateY(-50%)">💌 Thank You</div>
         </div>
     </div>
     <br>
