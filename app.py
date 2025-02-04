@@ -1,13 +1,14 @@
 import streamlit as st
 import random
 import numpy as np
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 import time
 
 # Valentine's Day Theme Colors
 background_color = "#FFE6E6"
 button_color = "#FF4C4C"
 text_color = "#D63384"
+
 prizes = ["10% Off", "Free Lipstick", "20% Off", "Buy 1 Get 1", "Free Shipping", "Gift Hamper"]
 colors = ["#FF9999", "#FF6666", "#FF4C4C", "#FFB6C1", "#FF69B4", "#FF1493"]
 
@@ -33,38 +34,15 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# Function to create a spin wheel
+# Function to create a spinning wheel using Matplotlib
 def draw_wheel(rotation_angle=0):
-    fig = go.Figure()
+    fig, ax = plt.subplots(figsize=(5, 5), subplot_kw=dict(aspect="equal"))
+    wedges, _ = ax.pie([1] * len(prizes), labels=prizes, colors=colors, startangle=rotation_angle)
 
-    fig.add_trace(go.Pie(
-        labels=prizes,
-        values=[1] * len(prizes),
-        textinfo="label",
-        marker=dict(colors=colors, line=dict(color="black", width=1.5)),
-        hole=0.2,
-    ))
-
-    fig.update_traces(rotation=rotation_angle)
-
-    # Add arrow indicator
-    fig.add_shape(
-        type="path",
-        path="M 0.5 1 L 0.45 0.8 L 0.55 0.8 Z",
-        xref="paper", yref="paper",
-        line=dict(color="black"),
-        fillcolor="red"
-    )
-
-    fig.update_layout(
-        showlegend=False,
-        margin=dict(l=10, r=10, t=10, b=10),
-        height=400,
-        width=400,
-        annotations=[
-            dict(text="🎡 Spin Me!", x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color="black"))
-        ]
-    )
+    # Add arrow
+    ax.annotate('▼', xy=(0, 0.8), xytext=(0, 1.2),
+                arrowprops=dict(facecolor='red', shrink=0.05),
+                ha='center', fontsize=20, color='black')
 
     return fig
 
@@ -73,9 +51,9 @@ st.title("💖 Valentine's Day Spin & Win! 💖")
 st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this Valentine's Day! 💕")
 
 rotation_angle = 0
-chart = draw_wheel(rotation_angle)
 wheel_chart = st.empty()  # Placeholder for updating chart
-wheel_chart.plotly_chart(chart)
+fig = draw_wheel(rotation_angle)
+wheel_chart.pyplot(fig)  # ✅ Fix: Use `pyplot()` instead of `plotly_chart()`
 
 if st.button("🎡 Spin the Wheel!"):
     with st.spinner("Spinning... 🎠"):
@@ -84,8 +62,8 @@ if st.button("🎡 Spin the Wheel!"):
         for i in range(steps):
             rotation_angle += random.randint(15, 30)  
             rotation_angle %= 360  
-            chart = draw_wheel(rotation_angle=rotation_angle)
-            wheel_chart.plotly_chart(chart, clear=True)  # ✅ Fix: Updates without duplicate error
+            fig = draw_wheel(rotation_angle=rotation_angle)
+            wheel_chart.pyplot(fig, clear=True)  # ✅ Fix: No duplicate error with `pyplot()`
             time.sleep(total_time / steps)
 
     sector_size = 360 / len(prizes)
