@@ -1,62 +1,173 @@
 import streamlit as st
-import numpy as np
-import matplotlib.pyplot as plt
-import time
+import sqlite3
+import pandas as pd
 import random
-from io import BytesIO
 
-# Define the prizes
-prizes = ["Free Lipstick", "10% Off", "Free Eyeliner", "$5 Coupon", "Mystery Gift", "20% Off", "Buy 1 Get 1", "Free Compact"]
-colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#A133FF', '#FFD700', '#FF8C00', '#00CED1']
+# Initialize SQLite database
+def init_db():
+    try:
+        conn = sqlite3.connect("winners.db")
+        cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
+                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                           name TEXT NOT NULL, 
+                           phone TEXT NOT NULL, 
+                           prize TEXT NOT NULL)''')
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Database error: {e}")
+    finally:
+        if conn:
+            conn.close()
 
-# Function to draw the wheel
-def draw_wheel(angle=0):
-    fig, ax = plt.subplots(figsize=(6,6), subplot_kw={'aspect': 'equal'})
-    wedges, _ = ax.pie([1]*len(prizes), colors=colors, startangle=angle, counterclock=False, wedgeprops={'edgecolor': 'white'})
+# Save winner details to the database
+def save_winner(name, phone, prize):
+    try:
+        conn = sqlite3.connect("winners.db")
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Failed to save winner: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+# Retrieve all winners from the database
+def get_winners():
+    try:
+        conn = sqlite3.connect("winners.db")
+        df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)  # Order by latest winners first
+        return df
+    except sqlite3.Error as e:
+        st.error(f"Failed to retrieve winners: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame in case of error
+    finally:
+        if conn:
+            conn.close()
+
+# Initialize the database
+init_db()
+
+# Streamlit UI Setup
+st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
+st.markdown(""" 
+    <style>
+    .stApp { background-color: #ffebf0; }
+    .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
+    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
+    .spin-wheel-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #spinWheel { width: 70% !important; height: 70% !important; }
+    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; margin-top: 20px; }
+    #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
+    .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_allow_html=True)
+
+# User Input Form
+with st.form("spin_form"):
+    name = st.text_input("Enter Your Name", placeholder="John Doe")
+    phone = st.text_input("Enter Your Phone Number", placeholder="123-456-7890")
+    submitted = st.form_submit_button("Spin the Wheel")
     
-    for i, wedge in enumerate(wedges):
-        theta = (wedge.theta2 + wedge.theta1) / 2
-        x = 0.65 * np.cos(np.radians(theta))
-        y = 0.65 * np.sin(np.radians(theta))
-        ax.text(x, y, prizes[i], ha='center', va='center', fontsize=10, weight='bold', color='white')
-    
-    # Draw center spin button
-    ax.add_patch(plt.Circle((0, 0), 0.15, color='black', zorder=10))
-    ax.text(0, 0, "SPIN", ha='center', va='center', fontsize=12, color='white', weight='bold', zorder=11)
-    
-    # Draw arrow
-    ax.annotate('', xy=(0, 1.05), xytext=(0, 0.75), arrowprops=dict(facecolor='red', edgecolor='black', linewidth=2, headwidth=15, headlength=20))
-    
-    buf = BytesIO()
-    plt.savefig(buf, format='png', transparent=True)
-    plt.close(fig)
-    return buf
+    if submitted:
+        if not name or not phone:
+            st.error("Please enter both your name and phone number.")
+        else:
+            st.success(f"🎉 Good Luck {name}! Spin the wheel and win a prize!")
 
-# Streamlit UI
-st.title("🎡 Spin & Win!")
-st.write("Click the center button to spin the wheel and win a prize!")
+            # Spin wheel HTML & JS Integration
+            spin_wheel_html = """
+            <div class="spin-wheel-container">
+                <canvas id="spinWheel"></canvas>
+                <div class="arrow">↑</div>
+                <button id="spin_btn">Spin</button>
+                <div id="text"><p>Good Luck!</p></div>
+            </div>
 
-# Display the initial wheel
-angle = 0
-wheel_image = draw_wheel(angle)
-st.image(wheel_image, use_container_width=True)
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+            <script>
+                const spinWheel = document.getElementById("spinWheel");
+                const spinBtn = document.getElementById("spin_btn");
+                const text = document.getElementById("text");
 
-# Spin Button
-if st.button("Spin Now!"):
-    with st.spinner("Spinning..."):
-        spins = random.randint(5, 10)  # Number of rotations
-        final_angle = random.randint(0, 360) + (spins * 360)
-        steps = 50
-        acceleration = [i/steps for i in range(int(steps/2))]  # Gradual acceleration
-        deceleration = [1 - (i/steps) for i in range(int(steps/2), steps)]  # Gradual deceleration
-        speeds = acceleration + deceleration
-        
-        for i in range(steps):
-            angle += speeds[i] * (final_angle / steps)
-            wheel_image = draw_wheel(angle)
-            st.image(wheel_image, use_container_width=True)
-            time.sleep(0.03 + (0.002 * i))  # Increasing delay for realistic deceleration
-        
-        # Determine the prize
-        winning_index = int(((360 - (angle % 360)) / 45) % len(prizes))
-        st.success(f"🎉 Congratulations! You won {prizes[winning_index]}! 🎁")
+                const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
+                const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
+                const size = [10, 10, 10, 10, 10, 10];
+
+                let spinChart = new Chart(spinWheel, {
+                    type: "pie",
+                    data: {
+                        labels: prizes,
+                        datasets: [{
+                            backgroundColor: spinColors,
+                            data: size,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        rotation: 0,
+                        animation: { duration: 0 },
+                        plugins: {
+                            tooltip: { enabled: false },
+                            legend: { display: false },
+                            datalabels: {
+                                rotation: 90,
+                                color: "#ffffff",
+                                formatter: (_, context) => context.chart.data.labels[context.dataIndex],
+                                font: { size: 18 },
+                            },
+                        },
+                    },
+                });
+
+                const generateValue = (angleValue) => {
+                    const sliceAngle = 360 / prizes.length;
+                    const prizeIndex = Math.floor((angleValue + (sliceAngle / 2)) / sliceAngle) % prizes.length;
+                    text.innerHTML = <p>Congratulations! You won ${prizes[prizeIndex]}</p>;
+                    spinBtn.disabled = false;
+
+                    // Save the winner to Streamlit backend using postMessage
+                    window.parent.postMessage({ "event": "winner", "prize": prizes[prizeIndex] }, "*");
+                };
+
+                let count = 0;
+                let resultValue = 101;
+                spinBtn.addEventListener("click", () => {
+                    spinBtn.disabled = true;
+                    text.innerHTML = <p>Best Of Luck!</p>;
+                    let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
+                    let rotationInterval = window.setInterval(() => {
+                        spinChart.options.rotation += resultValue;
+                        spinChart.update();
+                        if (spinChart.options.rotation >= 360) {
+                            count += 1;
+                            resultValue -= 5;
+                            spinChart.options.rotation = 0;
+                        } else if (count > 15 && spinChart.options.rotation == randomDegree) {
+                            generateValue(randomDegree);
+                            clearInterval(rotationInterval);
+                            count = 0;
+                            resultValue = 101;
+                        }
+                    }, 10);
+                });
+            </script>
+            """
+            st.components.v1.html(spin_wheel_html, height=600)
+
+# Handle Winner Data (Python backend)
+if st.session_state.get('winner'):
+    winner_info = st.session_state['winner']
+    save_winner(name, phone, winner_info['prize'])
+    st.subheader(f"🎉 Congratulations {name}, you won a {winner_info['prize']}! 🎉")
+
+# Display Recent Winners
+st.subheader("🎊 Recent Winners 🎊")
+winners_df = get_winners()
+if not winners_df.empty:
+    st.table(winners_df[['name', 'phone', 'prize']])
+else:
+    st.info("No winners yet. Be the first to spin the wheel!")
