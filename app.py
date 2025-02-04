@@ -61,6 +61,8 @@ st.markdown("""
     .stApp { background-color: #ffebf0; }
     .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
     .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
+    .spin-wheel { width: 50vw; height: 50vw; margin: 0 auto; }
+    .spin-wheel button { font-size: 1.5rem; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -81,21 +83,24 @@ with st.form("spin_form"):
             st.success(f"🎉 Congratulations {name}, You won {prize}! 🎁")
             
             # Show Spin Wheel Animation
-            spin_wheel_html = """
+            spin_wheel_html = f"""
             <html>
             <head>
             <style>
-                .ui-wheel-of-fortune {
+                .ui-wheel-of-fortune {{
                     --_items: 6;
                     all: unset;
                     aspect-ratio: 1 / 1;
-                    container-type: inline-size;
                     display: grid;
                     position: relative;
                     width: 100%;
-                }
+                    height: 100%;
+                    max-width: 400px;
+                    max-height: 400px;
+                    margin: 0 auto;
+                }}
 
-                .ui-wheel-of-fortune::after {
+                .ui-wheel-of-fortune::after {{
                     aspect-ratio: 1/cos(30deg);
                     background-color: crimson;
                     clip-path: polygon(50% 100%,100% 0,0 0);
@@ -104,53 +109,57 @@ with st.form("spin_form"):
                     position: absolute;
                     place-self: start center;
                     scale: 1.4;
-                }
+                }}
 
-                .ui-wheel-of-fortune > * { position: absolute; }
+                .ui-wheel-of-fortune > * {{
+                    position: absolute;
+                }}
 
-                button {
+                button {{
                     aspect-ratio: 1 / 1;
                     background: hsla(0, 0%, 100%, .8);
                     border: 0;
                     border-radius: 50%;
                     cursor: pointer;
-                    font-size: 5cqi;
+                    font-size: 2rem;
                     place-self: center;
-                    width: 20cqi;
-                }
+                    width: 50px;
+                    height: 50px;
+                }}
 
-                ul {
+                ul {{
                     all: unset;
                     clip-path: inset(0 0 0 0 round 50%);
                     display: grid;
                     inset: 0;
                     place-content: center start;
-                }
+                }}
 
-                li {
+                li {{
                     align-content: center;
                     aspect-ratio: 1 / calc(2 * tan(180deg / var(--_items)));
                     background: hsl(calc(360deg / var(--_items) * calc(var(--_idx))), 100%, 75%);
                     clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
                     display: grid;
-                    font-size: 5cqi;
+                    font-size: 1.5rem;
                     grid-area: 1 / -1;
                     padding-left: 1ch;
                     rotate: calc(360deg / var(--_items) * calc(var(--_idx) - 1));
                     transform-origin: center right;
                     user-select: none;
-                    width: 50cqi;
-                }
+                    width: 80px;
+                    height: 80px;
+                }}
 
-                li:nth-of-type(1) { --_idx: 1; }
-                li:nth-of-type(2) { --_idx: 2; }
-                li:nth-of-type(3) { --_idx: 3; }
-                li:nth-of-type(4) { --_idx: 4; }
-                li:nth-of-type(5) { --_idx: 5; }
-                li:nth-of-type(6) { --_idx: 6; }
+                li:nth-of-type(1) {{ --_idx: 1; }}
+                li:nth-of-type(2) {{ --_idx: 2; }}
+                li:nth-of-type(3) {{ --_idx: 3; }}
+                li:nth-of-type(4) {{ --_idx: 4; }}
+                li:nth-of-type(5) {{ --_idx: 5; }}
+                li:nth-of-type(6) {{ --_idx: 6; }}
             </style>
             <script>
-                function wheelOfFortune(selector) {
+                function wheelOfFortune(selector) {{
                     const node = document.querySelector(selector);
                     if (!node) return;
 
@@ -159,28 +168,28 @@ with st.form("spin_form"):
                     let animation;
                     let previousEndDegree = 0;
 
-                    spin.addEventListener('click', () => {
-                        if (animation) {
+                    spin.addEventListener('click', () => {{
+                        if (animation) {{
                             animation.cancel();
-                        }
+                        }}
 
                         const randomAdditionalDegrees = Math.random() * 360 + 1800;
                         const newEndDegree = previousEndDegree + randomAdditionalDegrees;
 
-                        animation = wheel.animate([
-                            { transform: `rotate(${previousEndDegree}deg)` },
-                            { transform: `rotate(${newEndDegree}deg)` }
-                        ], {
+                        animation = wheel.animate([ 
+                            {{ transform: `rotate(${previousEndDegree}deg)` }},
+                            {{ transform: `rotate(${newEndDegree}deg)` }}
+                        ], {{
                             duration: 4000,
                             direction: 'normal',
                             easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)',
                             fill: 'forwards',
                             iterations: 1
-                        });
+                        }});
 
                         previousEndDegree = newEndDegree;
-                    });
-                }
+                    }});
+                }}
                 wheelOfFortune('.ui-wheel-of-fortune');
             </script>
             </head>
