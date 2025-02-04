@@ -232,7 +232,7 @@ if 'customer_info' in st.session_state:
         st.dataframe(winners_df)
 
 # Handle winner updates from the JavaScript message
-message = st.experimental_get_query_params().get('winner', None)
+message = st.query_params.get('winner', None)
 if message:
     st.session_state.winner = message
     st.experimental_rerun()
