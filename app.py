@@ -46,13 +46,17 @@ if st.button("Spin Now!"):
     with st.spinner("Spinning..."):
         spins = random.randint(5, 10)  # Number of rotations
         final_angle = random.randint(0, 360) + (spins * 360)
-        steps = 30
+        steps = 50
+        acceleration = [i/steps for i in range(int(steps/2))]  # Gradual acceleration
+        deceleration = [1 - (i/steps) for i in range(int(steps/2), steps)]  # Gradual deceleration
+        speeds = acceleration + deceleration
+        
         for i in range(steps):
-            angle = (final_angle / steps) * (i+1)
+            angle += speeds[i] * (final_angle / steps)
             wheel_image = draw_wheel(angle)
             st.image(wheel_image, use_container_width=True)
-            time.sleep(0.05)
+            time.sleep(0.03 + (0.002 * i))  # Increasing delay for realistic deceleration
         
         # Determine the prize
-        winning_index = int(((360 - (final_angle % 360)) / 45) % len(prizes))
+        winning_index = int(((360 - (angle % 360)) / 45) % len(prizes))
         st.success(f"🎉 Congratulations! You won {prizes[winning_index]}! 🎁")
