@@ -55,6 +55,10 @@ st.markdown("""
     .stApp { background-color: #ffebf0; }
     .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
     .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
+    .spin-wheel-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    #spinWheel { width: 90% !important; height: 90% !important; }
+    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
+    #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -88,7 +92,8 @@ with st.form("spin_form"):
                     body { background-color: #f7f7f7; font-family: 'PT Serif', serif; }
                     h1 { color: #ff007f; text-align: center; font-size: 2rem; margin-top: 50px; }
                     .container { max-width: 600px; margin: auto; text-align: center; }
-                    #spinWheel { width: 100%; height: 400px; }
+                    .spin-wheel-container { width: 100%; height: 400px; display: flex; justify-content: center; align-items: center; }
+                    #spinWheel { width: 90% !important; height: 90% !important; }
                     #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
                     #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
                 </style>
@@ -96,7 +101,9 @@ with st.form("spin_form"):
             <body>
                 <div class="container">
                     <h1>Spin the Wheel and Win!</h1>
-                    <canvas id="spinWheel"></canvas>
+                    <div class="spin-wheel-container">
+                        <canvas id="spinWheel"></canvas>
+                    </div>
                     <button id="spin_btn">Spin</button>
                     <div id="text"><p>Good Luck!</p></div>
                 </div>
