@@ -154,9 +154,15 @@ with st.form("spin_form"):
                     };
                     
                     const saveWinner = (prize) => {
-                        // You could call your backend here to save winner data
-                        // For now, display a message
-                        alert("Winner saved: " + prize);
+                        // Call your backend API or use Streamlit to save the winner
+                        fetch("/save_winner", {
+                            method: "POST",
+                            body: JSON.stringify({ name: "${name}", phone: "${phone}", prize: prize }),
+                            headers: { "Content-Type": "application/json" }
+                        })
+                        .then(response => response.json())
+                        .then(data => alert("Winner saved!"))
+                        .catch(err => alert("Error saving winner: " + err));
                     };
                     
                     let count = 0;
