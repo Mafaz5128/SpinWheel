@@ -18,12 +18,12 @@ html_code = """
         .wheel-container { position: relative; display: inline-block; }
         .pointer {
             position: absolute;
-            top: -20px; left: 50%;
+            top: -15px; left: 50%;
             transform: translateX(-50%);
             width: 0; height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 30px solid red;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 25px solid red;
             z-index: 10;
         }
         canvas {
@@ -31,8 +31,8 @@ html_code = """
             border: 5px solid #ff4081;
         }
         button {
-            padding: 12px 20px;
-            font-size: 18px;
+            padding: 10px 18px;
+            font-size: 16px;
             background: #ff4081;
             color: white;
             border: none;
@@ -42,7 +42,7 @@ html_code = """
         }
         button:hover { background: #ff0055; }
         #result {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
         }
@@ -51,7 +51,7 @@ html_code = """
 <body>
     <div class="wheel-container">
         <div class="pointer"></div>
-        <canvas id="wheel" width="400" height="400"></canvas>
+        <canvas id="wheel" width="300" height="300"></canvas>
     </div>
     <br>
     <button id="spin">🎰 Spin the Wheel</button>
@@ -119,8 +119,8 @@ html_code = """
             ctx.rotate(ang + arc / 2);
             ctx.textAlign = "right";
             ctx.fillStyle = sector.text;
-            ctx.font = "bold 20px 'Lato', sans-serif";
-            ctx.fillText(sector.label, rad - 10, 10);
+            ctx.font = "bold 18px 'Lato', sans-serif";
+            ctx.fillText(sector.label, rad - 8, 8);
 
             ctx.restore();
         }
@@ -175,4 +175,4 @@ html_code = """
 """
 
 # Embed HTML + JS in Streamlit
-components.html(html_code, height=500)
+components.html(html_code, height=400)
