@@ -18,7 +18,8 @@ spin_wheel_html = f"""
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 350px;
+        height: 450px;
+        position: relative;
     }}
     canvas {{
         border-radius: 50%;
@@ -26,23 +27,32 @@ spin_wheel_html = f"""
     }}
     .spin-button {{
         margin-top: 20px;
-        padding: 12px 25px;
+        padding: 14px 30px;
         background-color: #ff477e;
         color: white;
-        font-size: 20px;
+        font-size: 22px;
         font-weight: bold;
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         cursor: pointer;
         transition: 0.3s;
     }}
     .spin-button:hover {{
         background-color: #e63966;
     }}
+    .indicator {{
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 30px;
+        color: #ff0000;
+    }}
 </style>
 
 <div class="wheel-container">
-    <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    <div class="indicator">🔻</div>
+    <canvas id="wheelCanvas" width="400" height="400"></canvas>
 </div>
 <button class="spin-button" onclick="spinWheel()">💖 Spin Now!</button>
 
@@ -65,17 +75,17 @@ spin_wheel_html = f"""
             let endAngle = startAngle + arc;
             ctx.fillStyle = colors[i];
             ctx.beginPath();
-            ctx.moveTo(150, 150);
-            ctx.arc(150, 150, 150, startAngle, endAngle, false);
-            ctx.lineTo(150, 150);
+            ctx.moveTo(200, 200);
+            ctx.arc(200, 200, 200, startAngle, endAngle, false);
+            ctx.lineTo(200, 200);
             ctx.fill();
             ctx.save();
             ctx.fillStyle = "white";
-            ctx.font = "bold 14px Arial";
-            ctx.translate(150 + Math.cos(startAngle + arc / 2) * 100, 
-                          150 + Math.sin(startAngle + arc / 2) * 100);
+            ctx.font = "bold 16px Arial";
+            ctx.translate(200 + Math.cos(startAngle + arc / 2) * 130, 
+                          200 + Math.sin(startAngle + arc / 2) * 130);
             ctx.rotate(startAngle + arc / 2 + Math.PI / 2);
-            ctx.fillText(segments[i], -40, 10);
+            ctx.fillText(segments[i], -50, 10);
             ctx.restore();
         }}
     }}
@@ -114,7 +124,7 @@ Click the **Spin Now!** button and see what you get! 🎁
 """)
 
 # Embed HTML for Spin Wheel
-selected_prize = st.components.v1.html(spin_wheel_html, height=500)
+selected_prize = st.components.v1.html(spin_wheel_html, height=550)
 
 # Confetti Effect
 if selected_prize:
