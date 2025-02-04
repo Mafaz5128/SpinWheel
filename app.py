@@ -1,8 +1,7 @@
 import streamlit as st
 import random
-import numpy as np
-import plotly.graph_objects as go
 import time
+import plotly.graph_objects as go
 
 # Valentine's Day Theme Colors
 background_color = "#FFE6E6"
@@ -36,7 +35,6 @@ st.markdown(f"""
 # Function to create a spin wheel
 def draw_wheel(rotation_angle=0):
     fig = go.Figure()
-
     fig.add_trace(go.Pie(
         labels=prizes,
         values=[1] * len(prizes),
@@ -44,10 +42,7 @@ def draw_wheel(rotation_angle=0):
         marker=dict(colors=colors, line=dict(color="black", width=1.5)),
         hole=0.2,
     ))
-
     fig.update_traces(rotation=rotation_angle)
-
-    # Add arrow indicator
     fig.add_shape(
         type="path",
         path="M 0.5 1 L 0.45 0.8 L 0.55 0.8 Z",
@@ -55,7 +50,6 @@ def draw_wheel(rotation_angle=0):
         line=dict(color="black"),
         fillcolor="red"
     )
-
     fig.update_layout(
         showlegend=False,
         margin=dict(l=10, r=10, t=10, b=10),
@@ -65,7 +59,6 @@ def draw_wheel(rotation_angle=0):
             dict(text="🎡 Spin Me!", x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color="black"))
         ]
     )
-
     return fig
 
 # UI
@@ -74,7 +67,7 @@ st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this V
 
 rotation_angle = 0
 chart = draw_wheel(rotation_angle)
-wheel_chart = st.empty()  # Placeholder for updating chart
+wheel_chart = st.empty()
 wheel_chart.plotly_chart(chart)
 
 if st.button("🎡 Spin the Wheel!"):
@@ -85,7 +78,7 @@ if st.button("🎡 Spin the Wheel!"):
             rotation_angle += random.randint(15, 30)  
             rotation_angle %= 360  
             chart = draw_wheel(rotation_angle=rotation_angle)
-            wheel_chart.plotly_chart(chart, clear=True)  # ✅ Fix: Updates without duplicate error
+            wheel_chart.plotly_chart(chart, clear=True)  
             time.sleep(total_time / steps)
 
     sector_size = 360 / len(prizes)
