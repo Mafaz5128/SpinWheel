@@ -2,167 +2,89 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import random
+import time
 
 # Initialize SQLite database
 def init_db():
-    try:
-        conn = sqlite3.connect("winners.db")
-        cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
-                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                           name TEXT NOT NULL, 
-                           phone TEXT NOT NULL, 
-                           prize TEXT NOT NULL)''')
-        conn.commit()
-    except sqlite3.Error as e:
-        st.error(f"Database error: {e}")
-    finally:
-        if conn:
-            conn.close()
+    conn = sqlite3.connect("winners.db")
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                       name TEXT NOT NULL, 
+                       phone TEXT NOT NULL, 
+                       prize TEXT NOT NULL)''')
+    conn.commit()
+    conn.close()
 
 # Save winner details to the database
 def save_winner(name, phone, prize):
-    try:
-        conn = sqlite3.connect("winners.db")
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
-        conn.commit()
-    except sqlite3.Error as e:
-        st.error(f"Failed to save winner: {e}")
-    finally:
-        if conn:
-            conn.close()
+    conn = sqlite3.connect("winners.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+    conn.commit()
+    conn.close()
 
 # Retrieve all winners from the database
 def get_winners():
-    try:
-        conn = sqlite3.connect("winners.db")
-        df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)  # Order by latest winners first
-        return df
-    except sqlite3.Error as e:
-        st.error(f"Failed to retrieve winners: {e}")
-        return pd.DataFrame()  # Return an empty DataFrame in case of error
-    finally:
-        if conn:
-            conn.close()
+    conn = sqlite3.connect("winners.db")
+    df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)
+    conn.close()
+    return df
 
 # Initialize the database
 init_db()
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
-st.markdown(""" 
+st.markdown("""
     <style>
     .stApp { background-color: #ffebf0; }
     .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
-    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
+    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; text-align: center; }
     .spin-wheel-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    #spinWheel { width: 70% !important; height: 70% !important; }
-    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; margin-top: 20px; }
-    #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
-    .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
+    .arrow { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -100%); font-size: 50px; color: #ff007f; }
     </style>
     """, unsafe_allow_html=True)
 
 st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_allow_html=True)
 
+# Prizes List
+prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"]
+
 # User Input Form
 with st.form("spin_form"):
     name = st.text_input("Enter Your Name", placeholder="John Doe")
     phone = st.text_input("Enter Your Phone Number", placeholder="123-456-7890")
-    submitted = st.form_submit_button("Spin the Wheel")
+    submitted = st.form_submit_button("Proceed to Spin")
     
-    if submitted:
-        if not name or not phone:
-            st.error("Please enter both your name and phone number.")
-        else:
-            st.success(f"🎉 Good Luck {name}! Spin the wheel and win a prize!")
+if submitted:
+    if not name or not phone:
+        st.error("Please enter both your name and phone number.")
+    else:
+        st.session_state["player_name"] = name
+        st.session_state["player_phone"] = phone
+        st.session_state["can_spin"] = True
+        st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-            # Spin wheel HTML & JS Integration
-            spin_wheel_html = """
-            <div class="spin-wheel-container">
-                <canvas id="spinWheel"></canvas>
-                <div class="arrow">↑</div>
-                <button id="spin_btn">Spin</button>
-                <div id="text"><p>Good Luck!</p></div>
-            </div>
-
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-            <script>
-                const spinWheel = document.getElementById("spinWheel");
-                const spinBtn = document.getElementById("spin_btn");
-                const text = document.getElementById("text");
-
-                const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
-                const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
-                const size = [10, 10, 10, 10, 10, 10];
-
-                let spinChart = new Chart(spinWheel, {
-                    type: "pie",
-                    data: {
-                        labels: prizes,
-                        datasets: [{
-                            backgroundColor: spinColors,
-                            data: size,
-                        }],
-                    },
-                    options: {
-                        responsive: true,
-                        rotation: 0,
-                        animation: { duration: 0 },
-                        plugins: {
-                            tooltip: { enabled: false },
-                            legend: { display: false },
-                            datalabels: {
-                                rotation: 90,
-                                color: "#ffffff",
-                                formatter: (_, context) => context.chart.data.labels[context.dataIndex],
-                                font: { size: 18 },
-                            },
-                        },
-                    },
-                });
-
-                const generateValue = (angleValue) => {
-                    const sliceAngle = 360 / prizes.length;
-                    const prizeIndex = Math.floor((angleValue + (sliceAngle / 2)) / sliceAngle) % prizes.length;
-                    text.innerHTML = <p>Congratulations! You won ${prizes[prizeIndex]}</p>;
-                    spinBtn.disabled = false;
-
-                    // Save the winner to Streamlit backend using postMessage
-                    window.parent.postMessage({ "event": "winner", "prize": prizes[prizeIndex] }, "*");
-                };
-
-                let count = 0;
-                let resultValue = 101;
-                spinBtn.addEventListener("click", () => {
-                    spinBtn.disabled = true;
-                    text.innerHTML = <p>Best Of Luck!</p>;
-                    let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
-                    let rotationInterval = window.setInterval(() => {
-                        spinChart.options.rotation += resultValue;
-                        spinChart.update();
-                        if (spinChart.options.rotation >= 360) {
-                            count += 1;
-                            resultValue -= 5;
-                            spinChart.options.rotation = 0;
-                        } else if (count > 15 && spinChart.options.rotation == randomDegree) {
-                            generateValue(randomDegree);
-                            clearInterval(rotationInterval);
-                            count = 0;
-                            resultValue = 101;
-                        }
-                    }, 10);
-                });
-            </script>
-            """
-            st.components.v1.html(spin_wheel_html, height=600)
-
-# Handle Winner Data (Python backend)
-if st.session_state.get('winner'):
-    winner_info = st.session_state['winner']
-    save_winner(name, phone, winner_info['prize'])
-    st.subheader(f"🎉 Congratulations {name}, you won a {winner_info['prize']}! 🎉")
+# Display the Spin Wheel Button
+if st.session_state.get("can_spin", False):
+    if st.button("🎡 Spin the Wheel 🎡"):
+        # Simulate spinning
+        st.write("Spinning...")
+        time.sleep(2)  # Simulate wheel spin delay
+        
+        # Choose random prize
+        selected_prize = random.choice(prizes)
+        
+        # Save the winner
+        save_winner(st.session_state["player_name"], st.session_state["player_phone"], selected_prize)
+        
+        # Display result
+        st.balloons()
+        st.success(f"🎊 Congratulations {st.session_state['player_name']}! You won a {selected_prize}! 🎊")
+        
+        # Reset spin permission
+        st.session_state["can_spin"] = False
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
