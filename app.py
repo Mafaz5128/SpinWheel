@@ -46,6 +46,8 @@ def draw_wheel(selected_prize=None, rotation_angle=0):
     ))
 
     # Rotate the wheel dynamically
+    fig.update_traces(rotation=rotation_angle)  # Corrected line for rotation
+
     fig.update_layout(
         showlegend=False,
         margin=dict(l=10, r=10, t=10, b=10),
@@ -53,8 +55,7 @@ def draw_wheel(selected_prize=None, rotation_angle=0):
         width=400,
         annotations=[
             dict(text="🎡 Spin Me!", x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color="black"))
-        ],
-        pie=dict(rotation=rotation_angle)  # Rotate the pie
+        ]
     )
 
     return fig
