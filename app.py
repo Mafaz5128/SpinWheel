@@ -94,7 +94,7 @@ with st.form("spin_form"):
                     h1 { color: #ff007f; text-align: center; font-size: 2rem; margin-top: 50px; }
                     .container { max-width: 600px; margin: auto; text-align: center; }
                     .spin-wheel-container { width: 100%; height: 400px; display: flex; justify-content: center; align-items: center; position: relative; }
-                    #spinWheel { width: 90% !important; height: 90% !important; }
+                    #spinWheel { width: 400px !important; height: 400px !important; }
                     #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
                     #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
                     .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
