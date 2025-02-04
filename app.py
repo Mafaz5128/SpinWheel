@@ -39,7 +39,7 @@ st.write("Click the center button to spin the wheel and win a prize!")
 # Display the initial wheel
 angle = 0
 wheel_image = draw_wheel(angle)
-st.image(wheel_image, use_column_width=True)
+st.image(wheel_image, use_container_width=True)
 
 # Spin Button
 if st.button("Spin Now!"):
@@ -50,7 +50,7 @@ if st.button("Spin Now!"):
         for i in range(steps):
             angle = (final_angle / steps) * (i+1)
             wheel_image = draw_wheel(angle)
-            st.image(wheel_image, use_column_width=True)
+            st.image(wheel_image, use_container_width=True)
             time.sleep(0.05)
         
         # Determine the prize
