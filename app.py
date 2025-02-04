@@ -3,35 +3,58 @@ import pandas as pd
 import random
 import sqlite3
 
+# Initialize SQLite database
 def init_db():
-    conn = sqlite3.connect("winners.db")
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, prize TEXT)''')
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect("winners.db")
+        cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
+                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                           name TEXT NOT NULL, 
+                           phone TEXT NOT NULL, 
+                           prize TEXT NOT NULL)''')
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Database error: {e}")
+    finally:
+        if conn:
+            conn.close()
 
+# Save winner details to the database
 def save_winner(name, phone, prize):
-    conn = sqlite3.connect("winners.db")
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect("winners.db")
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Failed to save winner: {e}")
+    finally:
+        if conn:
+            conn.close()
 
+# Retrieve all winners from the database
 def get_winners():
-    conn = sqlite3.connect("winners.db")
-    df = pd.read_sql("SELECT * FROM winners", conn)
-    conn.close()
-    return df
+    try:
+        conn = sqlite3.connect("winners.db")
+        df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)  # Order by latest winners first
+        return df
+    except sqlite3.Error as e:
+        st.error(f"Failed to retrieve winners: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame in case of error
+    finally:
+        if conn:
+            conn.close()
 
+# Get a random prize from the list
 def get_random_prize():
     prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"]
     return random.choice(prizes)
 
-# Initialize DB
+# Initialize the database
 init_db()
 
-# UI Setup
+# Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
 st.markdown(""" 
     <style>
@@ -45,60 +68,64 @@ st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_
 
 # User Input Form
 with st.form("spin_form"):
-    name = st.text_input("Enter Your Name")
-    phone = st.text_input("Enter Your Phone Number")
+    name = st.text_input("Enter Your Name", placeholder="John Doe")
+    phone = st.text_input("Enter Your Phone Number", placeholder="123-456-7890")
     submitted = st.form_submit_button("Spin the Wheel")
     
-    if submitted and name and phone:
-        prize = get_random_prize()
-        save_winner(name, phone, prize)
-        st.success(f"🎉 Congratulations {name}, You won {prize}! 🎁")
-        
-        # Show Spin Wheel
-        spin_wheel_html = """
-        <html>
-        <head>
-        <style>
-            .ui-wheel-of-fortune {
-                --_items: 6;
-                all: unset;
-                aspect-ratio: 1 / 1;
-                container-type: inline-size;
-                display: grid;
-                position: relative;
-                width: 100%;
-            }
+    if submitted:
+        if not name or not phone:
+            st.error("Please enter both your name and phone number.")
+        else:
+            prize = get_random_prize()
+            save_winner(name, phone, prize)
+            st.success(f"🎉 Congratulations {name}, You won {prize}! 🎁")
+            
+            # Show Spin Wheel Animation
+            spin_wheel_html = """
+            <html>
+            <head>
+            <style>
+                .ui-wheel-of-fortune {
+                    --_items: 6;
+                    all: unset;
+                    aspect-ratio: 1 / 1;
+                    container-type: inline-size;
+                    display: grid;
+                    position: relative;
+                    width: 100%;
+                }
 
-            .ui-wheel-of-fortune::after {
-                aspect-ratio: 1/cos(30deg);
-                background-color: crimson;
-                clip-path: polygon(50% 100%,100% 0,0 0);
-                content: "";
-                height: 4cqi;
-                position: absolute;
-                place-self: start center;
-                scale: 1.4;
-            }
+                .ui-wheel-of-fortune::after {
+                    aspect-ratio: 1/cos(30deg);
+                    background-color: crimson;
+                    clip-path: polygon(50% 100%,100% 0,0 0);
+                    content: "";
+                    height: 4cqi;
+                    position: absolute;
+                    place-self: start center;
+                    scale: 1.4;
+                }
 
-            .ui-wheel-of-fortune > * { position: absolute; }
+                .ui-wheel-of-fortune > * { position: absolute; }
 
-            button {
-                aspect-ratio: 1 / 1;
-                background: hsla(0, 0%, 100%, .8);
-                border: 0;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 5cqi;
-                place-self: center;
-                width: 20cqi;
-            }
+                button {
+                    aspect-ratio: 1 / 1;
+                    background: hsla(0, 0%, 100%, .8);
+                    border: 0;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 5cqi;
+                    place-self: center;
+                    width: 20cqi;
+                }
 
-            ul {
-                all: unset;
-                clip-path: inset(0 0 0 0 round 50%);
-                display: grid;
-                inset: 0;
-                place-content: center start;
+                ul {
+                    all: unset;
+                    clip-path: inset(0 0 0 0 round 50%);
+                    display: grid;
+                    inset: 0;
+                    place-content: center start;
+                }
 
                 li {
                     align-content: center;
@@ -121,61 +148,63 @@ with st.form("spin_form"):
                 li:nth-of-type(4) { --_idx: 4; }
                 li:nth-of-type(5) { --_idx: 5; }
                 li:nth-of-type(6) { --_idx: 6; }
-            }
-        </style>
-        <script>
-            function wheelOfFortune(selector) {
-                const node = document.querySelector(selector);
-                if (!node) return;
+            </style>
+            <script>
+                function wheelOfFortune(selector) {
+                    const node = document.querySelector(selector);
+                    if (!node) return;
 
-                const spin = node.querySelector('button');
-                const wheel = node.querySelector('ul');
-                let animation;
-                let previousEndDegree = 0;
+                    const spin = node.querySelector('button');
+                    const wheel = node.querySelector('ul');
+                    let animation;
+                    let previousEndDegree = 0;
 
-                spin.addEventListener('click', () => {
-                    if (animation) {
-                        animation.cancel();
-                    }
+                    spin.addEventListener('click', () => {
+                        if (animation) {
+                            animation.cancel();
+                        }
 
-                    const randomAdditionalDegrees = Math.random() * 360 + 1800;
-                    const newEndDegree = previousEndDegree + randomAdditionalDegrees;
+                        const randomAdditionalDegrees = Math.random() * 360 + 1800;
+                        const newEndDegree = previousEndDegree + randomAdditionalDegrees;
 
-                    animation = wheel.animate([
-                        { transform: `rotate(${previousEndDegree}deg)` },
-                        { transform: `rotate(${newEndDegree}deg)` }
-                    ], {
-                        duration: 4000,
-                        direction: 'normal',
-                        easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)',
-                        fill: 'forwards',
-                        iterations: 1
+                        animation = wheel.animate([
+                            { transform: `rotate(${previousEndDegree}deg)` },
+                            { transform: `rotate(${newEndDegree}deg)` }
+                        ], {
+                            duration: 4000,
+                            direction: 'normal',
+                            easing: 'cubic-bezier(0.440, -0.205, 0.000, 1.130)',
+                            fill: 'forwards',
+                            iterations: 1
+                        });
+
+                        previousEndDegree = newEndDegree;
                     });
+                }
+                wheelOfFortune('.ui-wheel-of-fortune');
+            </script>
+            </head>
+            <body>
+            <div class="ui-wheel-of-fortune">
+                <ul>
+                    <li>Lipstick</li>
+                    <li>Perfume</li>
+                    <li>Makeup Kit</li>
+                    <li>Nail Polish</li>
+                    <li>Face Mask</li>
+                    <li>Gift Voucher</li>
+                </ul>
+                <button type="button">SPIN</button>
+            </div>
+            </body>
+            </html>
+            """
+            st.components.v1.html(spin_wheel_html, height=500)
 
-                    previousEndDegree = newEndDegree;
-                });
-            }
-            wheelOfFortune('.ui-wheel-of-fortune');
-        </script>
-        </head>
-        <body>
-        <div class="ui-wheel-of-fortune">
-            <ul>
-                <li>Lipstick</li>
-                <li>Perfume</li>
-                <li>Makeup Kit</li>
-                <li>Nail Polish</li>
-                <li>Face Mask</li>
-                <li>Gift Voucher</li>
-            </ul>
-            <button type="button">SPIN</button>
-        </div>
-        </body>
-        </html>
-        """
-        st.components.v1.html(spin_wheel_html, height=500)
-
-# Display Winners List
+# Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
 winners = get_winners()
-st.table(winners[['name', 'phone', 'prize']])
+if not winners.empty:
+    st.table(winners[['name', 'phone', 'prize']])
+else:
+    st.info("No winners yet. Be the first to spin the wheel!")
