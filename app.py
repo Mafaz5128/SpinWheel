@@ -1,101 +1,93 @@
 import streamlit as st
+import pandas as pd
 import random
-import time
-import plotly.graph_objects as go
+import sqlite3
 
-# Valentine's Day Theme Colors
-background_color = "#FFE6E6"
-button_color = "#FF4C4C"
-text_color = "#D63384"
-prizes = ["10% Off", "Free Lipstick", "20% Off", "Buy 1 Get 1", "Free Shipping", "Gift Hamper"]
-colors = ["#FF9999", "#FF6666", "#FF4C4C", "#FFB6C1", "#FF69B4", "#FF1493"]
+def init_db():
+    conn = sqlite3.connect("winners.db")
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, prize TEXT)''')
+    conn.commit()
+    conn.close()
 
-# Custom CSS for Valentine's Theme
-st.markdown(f"""
+def save_winner(name, phone, prize):
+    conn = sqlite3.connect("winners.db")
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+    conn.commit()
+    conn.close()
+
+def get_winners():
+    conn = sqlite3.connect("winners.db")
+    df = pd.read_sql("SELECT * FROM winners", conn)
+    conn.close()
+    return df
+
+def get_random_prize():
+    prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"]
+    return random.choice(prizes)
+
+# Initialize DB
+init_db()
+
+# UI Setup
+st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
+st.markdown("""
     <style>
-        body {{
-            background-color: {background_color};
-            font-family: 'Arial', sans-serif;
-        }}
-        .stButton>button {{
-            background-color: {button_color} !important;
-            color: white !important;
-            border-radius: 50px !important;
-            font-size: 20px !important;
-            padding: 12px 24px !important;
-            border: none !important;
-        }}
-        .stTextInput>div>div>input {{
-            border-radius: 20px !important;
-            border: 2px solid {text_color} !important;
-        }}
+    .stApp { background-color: #ffebf0; }
+    .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
+    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# Function to create a spin wheel
-def draw_wheel(rotation_angle=0):
-    fig = go.Figure()
-    fig.add_trace(go.Pie(
-        labels=prizes,
-        values=[1] * len(prizes),
-        textinfo="label",
-        marker=dict(colors=colors, line=dict(color="black", width=1.5)),
-        hole=0.2,
-    ))
-    fig.update_traces(rotation=rotation_angle)
-    fig.add_shape(
-        type="path",
-        path="M 0.5 1 L 0.45 0.8 L 0.55 0.8 Z",
-        xref="paper", yref="paper",
-        line=dict(color="black"),
-        fillcolor="red"
-    )
-    fig.update_layout(
-        showlegend=False,
-        margin=dict(l=10, r=10, t=10, b=10),
-        height=400,
-        width=400,
-        annotations=[
-            dict(text="🎡 Spin Me!", x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color="black"))
-        ]
-    )
-    return fig
+st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_allow_html=True)
 
-# UI
-st.title("💖 Valentine's Day Spin & Win! 💖")
-st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this Valentine's Day! 💕")
-
-if "rotation_angle" not in st.session_state:
-    st.session_state.rotation_angle = 0
-if "wheel_chart" not in st.session_state:
-    st.session_state.wheel_chart = st.empty()
-
-st.session_state.wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
-
-if st.button("🎡 Spin the Wheel!"):
-    with st.spinner("Spinning... 🎠"):
-        total_time = 2  # Reduced for better UX
-        steps = 50  
-        for _ in range(steps):
-            st.session_state.rotation_angle += random.randint(15, 30)  
-            st.session_state.rotation_angle %= 360  
-            if _ % 5 == 0:  # Update less frequently to avoid duplicate errors
-                st.session_state.wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
-            time.sleep(total_time / steps)
+# User Input Form
+with st.form("spin_form"):
+    name = st.text_input("Enter Your Name")
+    phone = st.text_input("Enter Your Phone Number")
+    submitted = st.form_submit_button("Spin the Wheel")
     
-    sector_size = 360 / len(prizes)
-    winning_index = int((st.session_state.rotation_angle % 360) / sector_size)
-    selected_prize = prizes[winning_index]
+    if submitted and name and phone:
+        prize = get_random_prize()
+        save_winner(name, phone, prize)
+        st.success(f"🎉 Congratulations {name}, You won {prize}! 🎁")
+        
+        # Show Spin Wheel
+        spin_wheel_html = """
+        <html>
+        <head>
+        <style>
+            .wheel-container { position: relative; width: 300px; height: 300px; }
+            .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(
+                red 0deg 60deg, yellow 60deg 120deg, green 120deg 180deg,
+                blue 180deg 240deg, orange 240deg 300deg, purple 300deg 360deg);
+                transition: transform 3s ease-out; }
+            .arrow { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
+                background: red; clip-path: polygon(100% 0, 0 50%, 100% 100%);
+                transform: translate(-50%, -50%) rotate(-90deg); }
+        </style>
+        <script>
+            function spinWheel() {
+                let wheel = document.getElementById('wheel');
+                let randomDegree = 1800 + Math.floor(Math.random() * 360);
+                wheel.style.transform = 'rotate(' + randomDegree + 'deg)';
+            }
+        </script>
+        </head>
+        <body>
+        <div class='wheel-container'>
+            <div class='arrow'></div>
+            <div class='wheel' id='wheel'></div>
+        </div>
+        <button onclick='spinWheel()'>Spin</button>
+        </body>
+        </html>
+        """
+        st.components.v1.html(spin_wheel_html, height=400)
 
-    st.success(f"🎉 Congratulations! You won: {selected_prize} 🎁")
-
-# Collect user details
-st.subheader("💌 Claim Your Prize!")
-user_name = st.text_input("Enter your name (Optional)")
-user_email = st.text_input("Enter your email to receive the prize (Optional)")
-
-if st.button("Submit Details"):
-    if user_email:
-        st.success("✅ Your prize will be sent to your email soon! 💌")
-    else:
-        st.warning("⚠ Please enter a valid email to receive the prize.")
+# Display Winners List
+st.subheader("🎊 Recent Winners 🎊")
+winners = get_winners()
+st.table(winners[['name', 'phone', 'prize']])
