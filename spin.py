@@ -33,27 +33,19 @@ html_code = """
             position: relative;
             display: inline-block;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: conic-gradient(#ffcccb 0deg 72deg, #ff4081 72deg 144deg, #ff9966 144deg 216deg, #ff6600 216deg 288deg, #ff9933 288deg 360deg);
         }
-        .wheel-slice {
+        .wheel-text {
             position: absolute;
-            width: 50%; height: 50%;
-            background-color: transparent;
-            border-radius: 50%;
-            clip-path: polygon(100% 50%, 50% 100%, 0 50%, 50% 0);
-            text-align: center;
-            line-height: 150px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 16px;
             font-weight: bold;
             color: white;
             z-index: 1;
-            transform-origin: 100% 100%;
+            text-align: center;
         }
-        .wheel-slice:nth-child(1) { background-color: #ffcccb; transform: rotate(0deg); }
-        .wheel-slice:nth-child(2) { background-color: #ff4081; transform: rotate(72deg); }
-        .wheel-slice:nth-child(3) { background-color: #ff9966; transform: rotate(144deg); }
-        .wheel-slice:nth-child(4) { background-color: #ff6600; transform: rotate(216deg); }
-        .wheel-slice:nth-child(5) { background-color: #ff9933; transform: rotate(288deg); }
-
         button {
             padding: 12px 20px;
             font-size: 18px;
@@ -76,11 +68,11 @@ html_code = """
     <div class="wheel-container">
         <div class="pointer"></div>
         <div id="wheel" class="wheel">
-            <div class="wheel-slice" style="transform: rotate(0deg) translateY(-50%)">💄 Free Lipstick</div>
-            <div class="wheel-slice" style="transform: rotate(72deg) translateY(-50%)">🛍️ 10% Off</div>
-            <div class="wheel-slice" style="transform: rotate(144deg) translateY(-50%)">💖 Free Gift</div>
-            <div class="wheel-slice" style="transform: rotate(216deg) translateY(-50%)">🎁 20% Off</div>
-            <div class="wheel-slice" style="transform: rotate(288deg) translateY(-50%)">💌 Thank You</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(0deg)">💄 Free Lipstick</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(72deg)">🛍️ 10% Off</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(144deg)">💖 Free Gift</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(216deg)">🎁 20% Off</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(288deg)">💌 Thank You</div>
         </div>
     </div>
     <br>
