@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import random
+import time
 
 # Initialize SQLite database
 def init_db():
@@ -158,11 +159,9 @@ with st.form("spin_form"):
             st.components.v1.html(spin_wheel_html, height=600)
 
             # Handle Winner Data (Python backend)
-            winner_data = st.query_params.get("winner", None)
-            if winner_data:
-                prize = winner_data[0]
-                save_winner(name, phone, prize)
-                st.subheader(f"🎉 Congratulations {name}, you won a {prize}! 🎉")
+            prize = random.choice(["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"])
+            save_winner(name, phone, prize)
+            st.subheader(f"🎉 Congratulations {name}, you won a {prize}! 🎉")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
