@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
 
 # Initialize session state to store the winners table if not already initialized
 if 'winners_table' not in st.session_state:
@@ -209,12 +210,11 @@ with st.form(key="customer_form"):
     customer_phone = st.text_input("Enter your Phone Number:")
     submit_button = st.form_submit_button("Submit")
 
-# Check if customer form is submitted
+# If customer form is submitted, store customer info in session state
 if submit_button:
     st.session_state.customer_info = {"name": customer_name, "phone": customer_phone}
-    st.experimental_rerun()
 
-# Display the interactive winners table
+# Display the interactive winners table only after form submission
 if 'customer_info' in st.session_state:
     customer_name = st.session_state.customer_info.get('name', 'N/A')
     customer_phone = st.session_state.customer_info.get('phone', 'N/A')
@@ -223,9 +223,16 @@ if 'customer_info' in st.session_state:
     components.html(html_code, height=800)
 
     # Update the winners table with the new winner's data
+    if 'winner' in st.session_state:
+        st.session_state.winners_table.append(st.session_state.winner)
+
     st.subheader("🏆 Winners Table 🏆")
-    winners_df = pd.DataFrame(st.session_state.winners_table)
-    st.dataframe(winners_df)
-    
     if st.session_state.winners_table:
-        st.success(f"{customer_name}, good luck! You are now eligible to spin!")
+        winners_df = pd.DataFrame(st.session_state.winners_table)
+        st.dataframe(winners_df)
+
+# Handle winner updates from the JavaScript message
+message = st.experimental_get_query_params().get('winner', None)
+if message:
+    st.session_state.winner = message
+    st.experimental_rerun()
