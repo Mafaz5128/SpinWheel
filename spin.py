@@ -1,11 +1,14 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+# Set Streamlit Page Config
 st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="🎡")
-st.title("🎡 Spin & Win - Valentine's Day Special!")
 
+# App Title
+st.title("🎡 Spin & Win - Valentine's Day Special!")
 st.write("Click the **Spin the Wheel** button and try your luck!")
 
+# HTML + JavaScript for Spin Wheel
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -37,14 +40,17 @@ html_code = """
         let angle = 0;
         const sliceAngle = (2 * Math.PI) / prizes.length;
 
-        function drawWheel() {
+        function drawWheel(rotationAngle = 0) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(150, 150);
+            ctx.rotate(rotationAngle);
+            
             let startAngle = 0;
-
             for (let i = 0; i < prizes.length; i++) {
                 ctx.beginPath();
-                ctx.moveTo(150, 150);
-                ctx.arc(150, 150, 150, startAngle, startAngle + sliceAngle);
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, 150, startAngle, startAngle + sliceAngle);
                 ctx.fillStyle = i % 2 === 0 ? "#ffcccb" : "#ff4081";
                 ctx.fill();
                 ctx.closePath();
@@ -53,37 +59,36 @@ html_code = """
                 ctx.font = "bold 14px Arial";
                 ctx.textAlign = "center";
                 ctx.save();
-                ctx.translate(150, 150);
                 ctx.rotate(startAngle + sliceAngle / 2);
                 ctx.fillText(prizes[i], 90, 10);
                 ctx.restore();
 
                 startAngle += sliceAngle;
             }
+            ctx.restore();
         }
 
         function spinWheel() {
             if (spinning) return;
             spinning = true;
-            let rotation = Math.floor(Math.random() * 360) + 360 * 3;
+            let totalRotation = Math.floor(Math.random() * 360) + 360 * 5;  
             let spinTime = 3000;
-            let start = null;
+            let startTime = null;
 
             function rotate(timestamp) {
-                if (!start) start = timestamp;
-                let progress = timestamp - start;
-                let angleNow = easeOut(progress / spinTime) * rotation;
-                ctx.setTransform(1, 0, 0, 1, 150, 150);
-                ctx.rotate(angleNow * Math.PI / 180);
-                drawWheel();
+                if (!startTime) startTime = timestamp;
+                let progress = timestamp - startTime;
+                let easedProgress = easeOut(progress / spinTime);
+                angle = easedProgress * totalRotation * (Math.PI / 180);
+                drawWheel(angle);
+
                 if (progress < spinTime) {
                     requestAnimationFrame(rotate);
                 } else {
                     spinning = false;
-                    let finalAngle = (angleNow % 360);  
-                    let prizeIndex = Math.floor((360 - finalAngle) / (360 / prizes.length)) % prizes.length;
-                    let selectedPrize = prizes[prizeIndex];
-                    document.getElementById("result").innerText = "🎉 You won: " + selectedPrize + "!";
+                    let finalAngle = (totalRotation % 360) * (Math.PI / 180);
+                    let prizeIndex = Math.floor((360 - (finalAngle * 180 / Math.PI)) / (360 / prizes.length)) % prizes.length;
+                    document.getElementById("result").innerText = "🎉 You won: " + prizes[prizeIndex] + "!";
                 }
             }
 
@@ -100,5 +105,5 @@ html_code = """
 </html>
 """
 
-# Embed JavaScript Wheel in Streamlit
+# Embed HTML + JS in Streamlit
 components.html(html_code, height=500)
