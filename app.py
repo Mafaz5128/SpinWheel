@@ -1,12 +1,12 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Embed the HTML, CSS, and JS directly into the Streamlit app
+# Embed the updated HTML, CSS, and JS directly into the Streamlit app
 html_code = """
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spin Wheel App</title>
+    <title>Valentine's Spin & Win</title>
     <!-- Google Font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap"
@@ -22,7 +22,7 @@ html_code = """
       }
       body {
         height: 100vh;
-        background: linear-gradient(135deg, #c3a3f1, #6414e9);
+        background: linear-gradient(135deg, #ffcccb, #ff477e);
       }
       .wrapper {
         width: 90%;
@@ -97,7 +97,7 @@ html_code = """
     <div class="wrapper">
       <div class="container">
         <canvas id="wheel"></canvas>
-        <button id="spin-btn">Spin</button>
+        <button id="spin-btn">💖 Spin Now!</button>
         <img src="https://cutewallpaper.org/24/yellow-arrow-png/155564497.jpg" alt="spinner arrow" />
       </div>
       <div id="final-value">
@@ -113,28 +113,28 @@ html_code = """
       const spinBtn = document.getElementById("spin-btn");
       const finalValue = document.getElementById("final-value");
       const rotationValues = [
-        { minDegree: 0, maxDegree: 30, value: 2 },
-        { minDegree: 31, maxDegree: 90, value: 1 },
-        { minDegree: 91, maxDegree: 150, value: 6 },
-        { minDegree: 151, maxDegree: 210, value: 5 },
-        { minDegree: 211, maxDegree: 270, value: 4 },
-        { minDegree: 271, maxDegree: 330, value: 3 },
-        { minDegree: 331, maxDegree: 360, value: 2 },
+        { minDegree: 0, maxDegree: 30, value: "💄 Free Lipstick" },
+        { minDegree: 31, maxDegree: 90, value: "🌹 10% Off Coupon" },
+        { minDegree: 91, maxDegree: 150, value: "💖 Buy 1 Get 1 Free" },
+        { minDegree: 151, maxDegree: 210, value: "🎁 Mystery Gift" },
+        { minDegree: 211, maxDegree: 270, value: "💌 20% Off Next Purchase" },
+        { minDegree: 271, maxDegree: 330, value: "💕 Free Beauty Consultation" },
+        { minDegree: 331, maxDegree: 360, value: "🎉 Surprise Prize!" },
       ];
       const data = [16, 16, 16, 16, 16, 16];
       var pieColors = [
-        "#8b35bc",
-        "#b163da",
-        "#8b35bc",
-        "#b163da",
-        "#8b35bc",
-        "#b163da",
+        "#ff477e",
+        "#ff85a2",
+        "#ff6188",
+        "#ff92b1",
+        "#ffccd5",
+        "#ffb2d9",
       ];
       let myChart = new Chart(wheel, {
         plugins: [ChartDataLabels],
         type: "pie",
         data: {
-          labels: [1, 2, 3, 4, 5, 6],
+          labels: ["💄", "🌹", "💖", "🎁", "💌", "💕"],
           datasets: [
             {
               backgroundColor: pieColors,
@@ -160,7 +160,7 @@ html_code = """
       const valueGenerator = (angleValue) => {
         for (let i of rotationValues) {
           if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
-            finalValue.innerHTML = `<p>Value: ${i.value}</p>`;
+            finalValue.innerHTML = `<p>You won: ${i.value}</p>`;
             spinBtn.disabled = false;
             break;
           }
@@ -192,6 +192,6 @@ html_code = """
 </html>
 """
 
-# Render the HTML in the Streamlit app
-st.title("Spin Wheel App")
+# Render the updated HTML in the Streamlit app
+st.title("💘 Valentine's Spin & Win! 🎡")
 components.html(html_code, height=800)
