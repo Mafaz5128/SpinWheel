@@ -39,7 +39,7 @@ html_code = """
             position: absolute;
             top: 50%; left: 50%;
             transform-origin: center center;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: white;
             z-index: 1;
@@ -67,11 +67,11 @@ html_code = """
     <div class="wheel-container">
         <div class="pointer"></div>
         <div id="wheel" class="wheel">
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(0deg) translateY(-120px)">💄 Free Lipstick</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(72deg) translateY(-120px)">🛍️ 10% Off</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(144deg) translateY(-120px)">💖 Free Gift</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(216deg) translateY(-120px)">🎁 20% Off</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(288deg) translateY(-120px)">💌 Thank You</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(0deg) translateY(-120px) rotate(45deg)">💄 Free Lipstick</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(72deg) translateY(-120px) rotate(45deg)">🛍️ 10% Off</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(144deg) translateY(-120px) rotate(45deg)">💖 Free Gift</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(216deg) translateY(-120px) rotate(45deg)">🎁 20% Off</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(288deg) translateY(-120px) rotate(45deg)">💌 Thank You</div>
         </div>
     </div>
     <br>
