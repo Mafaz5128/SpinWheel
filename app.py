@@ -98,7 +98,7 @@ html_code = """
       <div class="container">
         <canvas id="wheel"></canvas>
         <button id="spin-btn">💖 Spin Now!</button>
-        <img src="https://cutewallpaper.org/24/yellow-arrow-png/155564497.jpg" alt="spinner arrow" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Heart_arrow.svg" alt="spinner arrow" />
       </div>
       <div id="final-value">
         <p>Click On The Spin Button To Start</p>
