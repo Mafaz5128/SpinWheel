@@ -31,8 +31,28 @@ html_code = """
             border-radius: 50%;
             border: 5px solid #ff4081;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-            background: conic-gradient(#ffcccb 0deg 72deg, #ff4081 72deg 144deg, #ffcccb 144deg 216deg, #ff4081 216deg 288deg, #ffcccb 288deg 360deg);
+            position: relative;
+            display: inline-block;
         }
+        .wheel-slice {
+            position: absolute;
+            width: 50%; height: 50%;
+            background-color: transparent;
+            border-radius: 50%;
+            clip-path: polygon(100% 50%, 50% 100%, 0 50%, 50% 0);
+            text-align: center;
+            line-height: 150px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            z-index: 1;
+        }
+        .wheel-slice:nth-child(1) { background-color: #ffcccb; transform: rotate(0deg); }
+        .wheel-slice:nth-child(2) { background-color: #ff4081; transform: rotate(72deg); }
+        .wheel-slice:nth-child(3) { background-color: #ff9966; transform: rotate(144deg); }
+        .wheel-slice:nth-child(4) { background-color: #ff6600; transform: rotate(216deg); }
+        .wheel-slice:nth-child(5) { background-color: #ff9933; transform: rotate(288deg); }
+
         button {
             padding: 12px 20px;
             font-size: 18px;
@@ -54,7 +74,13 @@ html_code = """
 <body>
     <div class="wheel-container">
         <div class="pointer"></div>
-        <div id="wheel" class="wheel"></div>
+        <div id="wheel" class="wheel">
+            <div class="wheel-slice">💄 Free Lipstick</div>
+            <div class="wheel-slice">🛍️ 10% Off</div>
+            <div class="wheel-slice">💖 Free Gift</div>
+            <div class="wheel-slice">🎁 20% Off</div>
+            <div class="wheel-slice">💌 Thank You</div>
+        </div>
     </div>
     <br>
     <button onclick="spinWheel()">🎰 Spin the Wheel</button>
