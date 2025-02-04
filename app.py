@@ -145,7 +145,7 @@ if submit_button:
     components.html(spin_wheel_html, height=550)
 
     # **Streamlit JS Eval to Capture Prize**
-    selected_prize = st.experimental_get_query_params().get("prize", [None])[0]
+    selected_prize = st.query_params.get("prize", [None])[0]
 
     # Check if prize was set by the spin wheel
     if selected_prize:
