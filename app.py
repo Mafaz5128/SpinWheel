@@ -1,6 +1,10 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
+# Initialize session state to store the winners table if not already initialized
+if 'winners_table' not in st.session_state:
+    st.session_state.winners_table = []
+
 # Embed the updated HTML, CSS, and JS directly into the Streamlit app
 html_code = """
 <html lang="en">
@@ -184,6 +188,12 @@ html_code = """
             clearInterval(rotationInterval);
             count = 0;
             resultValue = 101;
+            // Add the winner to the table
+            let winnerName = document.getElementById("name").value;
+            let winnerPhone = document.getElementById("phone").value;
+            let prizeWon = finalValue.innerText.replace("You won: ", "");
+            let winnerEntry = { name: winnerName, phone: winnerPhone, prize: prizeWon };
+            window.parent.postMessage({ action: 'add_winner', winner: winnerEntry }, "*");
           }
         }, 10);
       });
@@ -192,6 +202,30 @@ html_code = """
 </html>
 """
 
-# Render the updated HTML in the Streamlit app
+# Display customer details form
 st.title("💘 Valentine's Spin & Win! 🎡")
-components.html(html_code, height=800)
+with st.form(key="customer_form"):
+    customer_name = st.text_input("Enter your Name:")
+    customer_phone = st.text_input("Enter your Phone Number:")
+    submit_button = st.form_submit_button("Submit")
+
+# Check if customer form is submitted
+if submit_button:
+    st.session_state.customer_info = {"name": customer_name, "phone": customer_phone}
+    st.experimental_rerun()
+
+# Display the interactive winners table
+if 'customer_info' in st.session_state:
+    customer_name = st.session_state.customer_info.get('name', 'N/A')
+    customer_phone = st.session_state.customer_info.get('phone', 'N/A')
+
+    st.subheader(f"Welcome, {customer_name} ({customer_phone})!")
+    components.html(html_code, height=800)
+
+    # Update the winners table with the new winner's data
+    st.subheader("🏆 Winners Table 🏆")
+    winners_df = pd.DataFrame(st.session_state.winners_table)
+    st.dataframe(winners_df)
+    
+    if st.session_state.winners_table:
+        st.success(f"{customer_name}, good luck! You are now eligible to spin!")
