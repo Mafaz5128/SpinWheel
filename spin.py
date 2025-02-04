@@ -30,9 +30,9 @@ html_code = """
             width: 300px; height: 300px;
             border-radius: 50%;
             border: 5px solid #ff4081;
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
             position: relative;
             display: inline-block;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
         }
         .wheel-slice {
             position: absolute;
@@ -42,7 +42,7 @@ html_code = """
             clip-path: polygon(100% 50%, 50% 100%, 0 50%, 50% 0);
             text-align: center;
             line-height: 150px;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             color: white;
             z-index: 1;
