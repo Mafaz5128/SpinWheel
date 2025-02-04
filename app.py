@@ -2,7 +2,6 @@ import streamlit as st
 import random
 import pandas as pd
 import streamlit.components.v1 as components
-from streamlit_js_eval import streamlit_js_eval
 
 # Define prizes
 prizes = [
@@ -106,6 +105,7 @@ spin_wheel_html = f"""
         }} else {{
             setTimeout(() => {{
                 let winningPrize = segments[prizeIndex];
+                // Set the winning prize to the hidden input field
                 window.parent.postMessage(winningPrize, "*");  // Send prize to Python
             }}, 500);
         }}
@@ -145,9 +145,9 @@ if submit_button:
     components.html(spin_wheel_html, height=550)
 
     # **Streamlit JS Eval to Capture Prize**
-    selected_prize = streamlit_js_eval(js_expressions="window.addEventListener('message', (event) => {return event.data;})")
+    selected_prize = st.experimental_get_query_params().get("prize", [None])[0]
 
-    # Display result after spin
+    # Check if prize was set by the spin wheel
     if selected_prize:
         # Create a DataFrame with customer details and the prize
         customer_data = pd.DataFrame({
