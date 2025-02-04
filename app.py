@@ -66,25 +66,56 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-# Display the Spin Wheel Button
+# Display the Spin Wheel
 if st.session_state.get("can_spin", False):
-    if st.button("🎡 Spin the Wheel 🎡"):
-        # Simulate spinning
-        st.write("Spinning...")
-        time.sleep(2)  # Simulate wheel spin delay
+    spin_wheel_html = """
+    <div style='text-align: center;'>
+        <canvas id='spinWheel' width='300' height='300'></canvas>
+        <br>
+        <button id='spin_btn' style='padding: 10px 20px; font-size: 16px; background-color: #ff007f; color: white; border: none; cursor: pointer; border-radius: 5px;'>Spin</button>
+        <p id='result' style='font-size: 18px; font-weight: bold;'></p>
+    </div>
+    
+    <script>
+        const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
+        const spinBtn = document.getElementById("spin_btn");
+        const resultText = document.getElementById("result");
+        const canvas = document.getElementById("spinWheel");
+        const ctx = canvas.getContext("2d");
+
+        function drawWheel() {
+            const colors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
+            const arc = Math.PI * 2 / prizes.length;
+            for (let i = 0; i < prizes.length; i++) {
+                ctx.beginPath();
+                ctx.fillStyle = colors[i];
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 150, arc * i, arc * (i + 1));
+                ctx.lineTo(150, 150);
+                ctx.fill();
+            }
+        }
         
-        # Choose random prize
-        selected_prize = random.choice(prizes)
-        
-        # Save the winner
-        save_winner(st.session_state["player_name"], st.session_state["player_phone"], selected_prize)
-        
-        # Display result
-        st.balloons()
-        st.success(f"🎊 Congratulations {st.session_state['player_name']}! You won a {selected_prize}! 🎊")
-        
-        # Reset spin permission
-        st.session_state["can_spin"] = False
+        drawWheel();
+
+        spinBtn.addEventListener("click", () => {
+            let angle = Math.floor(Math.random() * 360);
+            canvas.style.transform = `rotate(${angle}deg)`;
+            setTimeout(() => {
+                let prizeIndex = Math.floor((angle / 60) % prizes.length);
+                resultText.innerText = `🎉 You won: ${prizes[prizeIndex]}! 🎉`;
+                window.parent.postMessage({"event": "winner", "prize": prizes[prizeIndex]}, "*");
+            }, 2000);
+        });
+    </script>
+    """
+    st.components.v1.html(spin_wheel_html, height=400)
+
+# Handle Winner Data
+if "winner" in st.session_state:
+    winner_info = st.session_state["winner"]
+    save_winner(st.session_state["player_name"], st.session_state["player_phone"], winner_info["prize"])
+    st.success(f"🎉 Congratulations {st.session_state['player_name']}, you won a {winner_info['prize']}! 🎉")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
