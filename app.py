@@ -128,7 +128,7 @@ with st.form("spin_form"):
                     text.innerHTML = `<p>Congratulations! You won ${prizes[prizeIndex]}</p>`;
                     spinBtn.disabled = false;
 
-                    // Save the winner to Streamlit backend
+                    // Save the winner to Streamlit backend using postMessage
                     window.parent.postMessage({ "event": "winner", "prize": prizes[prizeIndex] }, "*");
                 };
 
@@ -139,7 +139,7 @@ with st.form("spin_form"):
                     text.innerHTML = `<p>Best Of Luck!</p>`;
                     let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
                     let rotationInterval = window.setInterval(() => {
-                        spinChart.options.rotation = spinChart.options.rotation + resultValue;
+                        spinChart.options.rotation += resultValue;
                         spinChart.update();
                         if (spinChart.options.rotation >= 360) {
                             count += 1;
@@ -157,17 +157,16 @@ with st.form("spin_form"):
             """
             st.components.v1.html(spin_wheel_html, height=600)
 
-            # Handle Winner Data (Python backend)
-            winner_data = st.query_params.get("winner", None)
-            if winner_data:
-                prize = winner_data[0]
-                save_winner(name, phone, prize)
-                st.subheader(f"🎉 Congratulations {name}, you won a {prize}! 🎉")
+# Handle Winner Data (Python backend)
+if st.session_state.get('winner'):
+    winner_info = st.session_state['winner']
+    save_winner(name, phone, winner_info['prize'])
+    st.subheader(f"🎉 Congratulations {name}, you won a {winner_info['prize']}! 🎉")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
-winners = get_winners()
-if not winners.empty:
-    st.table(winners[['name', 'phone', 'prize']])
+winners_df = get_winners()
+if not winners_df.empty:
+    st.table(winners_df[['name', 'phone', 'prize']])
 else:
     st.info("No winners yet. Be the first to spin the wheel!")
