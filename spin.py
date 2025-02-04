@@ -44,6 +44,7 @@ html_code = """
             color: white;
             z-index: 1;
             text-align: center;
+            transform: translate(-50%, -50%) rotate(0deg);
         }
         button {
             padding: 12px 20px;
@@ -67,7 +68,7 @@ html_code = """
     <div class="wheel-container">
         <div class="pointer"></div>
         <div id="wheel" class="wheel">
-            <!-- Each slice text is positioned in the center -->
+            <!-- Each slice text is positioned at a specific angle -->
             <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(0deg) translateY(-120px)">💄 Free Lipstick</div>
             <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(72deg) translateY(-120px)">🛍️ 10% Off</div>
             <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(144deg) translateY(-120px)">💖 Free Gift</div>
