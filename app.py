@@ -65,22 +65,24 @@ def draw_wheel(rotation_angle=0):
 st.title("💖 Valentine's Day Spin & Win! 💖")
 st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this Valentine's Day! 💕")
 
-rotation_angle = 0
+if "rotation_angle" not in st.session_state:
+    st.session_state.rotation_angle = 0
+
 wheel_chart = st.empty()
-wheel_chart.plotly_chart(draw_wheel(rotation_angle))
+wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
 
 if st.button("🎡 Spin the Wheel!"):
     with st.spinner("Spinning... 🎠"):
-        total_time = 15  
+        total_time = 2  # Reduced for better UX
         steps = 50  
-        for i in range(steps):
-            rotation_angle += random.randint(15, 30)  
-            rotation_angle %= 360  
-            wheel_chart.plotly_chart(draw_wheel(rotation_angle))  
+        for _ in range(steps):
+            st.session_state.rotation_angle += random.randint(15, 30)  
+            st.session_state.rotation_angle %= 360  
+            wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
             time.sleep(total_time / steps)
 
     sector_size = 360 / len(prizes)
-    winning_index = int((rotation_angle % 360) / sector_size)
+    winning_index = int((st.session_state.rotation_angle % 360) / sector_size)
     selected_prize = prizes[winning_index]
 
     st.success(f"🎉 Congratulations! You won: {selected_prize} 🎁")
