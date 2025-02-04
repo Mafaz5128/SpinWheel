@@ -31,6 +31,7 @@ html_code = """
             border-radius: 50%;
             border: 5px solid #ff4081;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: conic-gradient(#ffcccb 0deg 72deg, #ff4081 72deg 144deg, #ffcccb 144deg 216deg, #ff4081 216deg 288deg, #ffcccb 288deg 360deg);
         }
         button {
             padding: 12px 20px;
@@ -53,7 +54,7 @@ html_code = """
 <body>
     <div class="wheel-container">
         <div class="pointer"></div>
-        <img id="wheel" class="wheel" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Roulette_wheel_blank.svg/300px-Roulette_wheel_blank.svg.png">
+        <div id="wheel" class="wheel"></div>
     </div>
     <br>
     <button onclick="spinWheel()">🎰 Spin the Wheel</button>
@@ -69,16 +70,18 @@ html_code = """
             let randomExtraSpins = Math.floor(Math.random() * 3 + 5) * 360;  // Ensures multiple full spins
             let randomOffset = Math.floor(Math.random() * 360);  // Random stop position
             let totalRotation = lastRotation + randomExtraSpins + randomOffset;
-            
+
+            // Apply the CSS rotation to the wheel
             document.getElementById("wheel").style.transform = `rotate(${totalRotation}deg)`;
             
+            // Determine the prize based on the final rotation
             setTimeout(() => {
                 let finalAngle = totalRotation % 360;  // Normalize to 0-360 degrees
                 let prizeIndex = Math.floor((360 - finalAngle + sliceAngle / 2) / sliceAngle) % totalSlices;
                 document.getElementById("result").innerText = "🎉 You won: " + prizes[prizeIndex] + "!";
             }, 4000);  // Wait for animation to complete
             
-            lastRotation = totalRotation;  // Save rotation state
+            lastRotation = totalRotation;  // Save rotation state for next spin
         }
     </script>
 </body>
