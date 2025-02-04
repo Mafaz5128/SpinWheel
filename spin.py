@@ -26,25 +26,9 @@ html_code = """
             border-bottom: 30px solid red;
             z-index: 10;
         }
-        .wheel {
-            width: 300px; height: 300px;
+        canvas {
             border-radius: 50%;
             border: 5px solid #ff4081;
-            position: relative;
-            display: inline-block;
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-            background: conic-gradient(#ffcccb 0deg 72deg, #ff4081 72deg 144deg, #ff9966 144deg 216deg, #ff6600 216deg 288deg, #ff9933 288deg 360deg);
-        }
-        .wheel-text {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform-origin: center center;
-            font-size: 14px;
-            font-weight: bold;
-            color: white;
-            z-index: 1;
-            text-align: center;
-            transform: translate(-50%, -50%) rotate(0deg);
         }
         button {
             padding: 12px 20px;
@@ -67,42 +51,124 @@ html_code = """
 <body>
     <div class="wheel-container">
         <div class="pointer"></div>
-        <div id="wheel" class="wheel">
-            <!-- Each slice text is positioned at a specific angle -->
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(0deg) translateY(-120px)">💄 Free Lipstick</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(72deg) translateY(-120px)">🛍️ 10% Off</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(144deg) translateY(-120px)">💖 Free Gift</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(216deg) translateY(-120px)">🎁 20% Off</div>
-            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(288deg) translateY(-120px)">💌 Thank You</div>
-        </div>
+        <canvas id="wheel" width="400" height="400"></canvas>
     </div>
     <br>
-    <button onclick="spinWheel()">🎰 Spin the Wheel</button>
+    <button id="spin">🎰 Spin the Wheel</button>
     <p id="result"></p>
 
     <script>
-        const prizes = ["💄 Free Lipstick", "🛍️ 10% Off", "💖 Free Gift", "🎁 20% Off", "💌 Thank You"];
-        const totalSlices = prizes.length;
-        const sliceAngle = 360 / totalSlices;
-        let lastRotation = 0;
+        const sectors = [
+            { color: "#FFBC03", text: "#333333", label: "Sweets" },
+            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
+            { color: "#FFBC03", text: "#333333", label: "Sweets" },
+            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
+            { color: "#FFBC03", text: "#333333", label: "Sweets + Prize draw" },
+            { color: "#FF5A10", text: "#333333", label: "You lose" },
+            { color: "#FFBC03", text: "#333333", label: "Prize draw" },
+            { color: "#FF5A10", text: "#333333", label: "Sweets" }
+        ];
 
-        function spinWheel() {
-            let randomExtraSpins = Math.floor(Math.random() * 3 + 5) * 360;  // Ensures multiple full spins
-            let randomOffset = Math.floor(Math.random() * 360);  // Random stop position
-            let totalRotation = lastRotation + randomExtraSpins + randomOffset;
+        const events = {
+            listeners: {},
+            addListener: function (eventName, fn) {
+                this.listeners[eventName] = this.listeners[eventName] || [];
+                this.listeners[eventName].push(fn);
+            },
+            fire: function (eventName, ...args) {
+                if (this.listeners[eventName]) {
+                    for (let fn of this.listeners[eventName]) {
+                        fn(...args);
+                    }
+                }
+            }
+        };
 
-            // Apply the CSS rotation to the wheel
-            document.getElementById("wheel").style.transform = `rotate(${totalRotation}deg)`;
-            
-            // Determine the prize based on the final rotation
-            setTimeout(() => {
-                let finalAngle = totalRotation % 360;  // Normalize to 0-360 degrees
-                let prizeIndex = Math.floor((360 - finalAngle + sliceAngle / 2) / sliceAngle) % totalSlices;
-                document.getElementById("result").innerText = "🎉 You won: " + prizes[prizeIndex] + "!";
-            }, 4000);  // Wait for animation to complete
-            
-            lastRotation = totalRotation;  // Save rotation state for next spin
+        const rand = (m, M) => Math.random() * (M - m) + m;
+        const tot = sectors.length;
+        const spinEl = document.querySelector("#spin");
+        const canvas = document.querySelector("#wheel");
+        const ctx = canvas.getContext("2d");
+        const dia = canvas.width;
+        const rad = dia / 2;
+        const PI = Math.PI;
+        const TAU = 2 * PI;
+        const arc = TAU / sectors.length;
+
+        const friction = 0.991;
+        let angVel = 0;
+        let ang = 0;
+        let spinButtonClicked = false;
+
+        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
+
+        function drawSector(sector, i) {
+            const ang = arc * i;
+            ctx.save();
+
+            // COLOR
+            ctx.beginPath();
+            ctx.fillStyle = sector.color;
+            ctx.moveTo(rad, rad);
+            ctx.arc(rad, rad, rad, ang, ang + arc);
+            ctx.lineTo(rad, rad);
+            ctx.fill();
+
+            // TEXT
+            ctx.translate(rad, rad);
+            ctx.rotate(ang + arc / 2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = sector.text;
+            ctx.font = "bold 20px 'Lato', sans-serif";
+            ctx.fillText(sector.label, rad - 10, 10);
+
+            ctx.restore();
         }
+
+        function rotate() {
+            const sector = sectors[getIndex()];
+            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+
+            spinEl.textContent = !angVel ? "SPIN" : sector.label;
+            spinEl.style.background = sector.color;
+            spinEl.style.color = sector.text;
+        }
+
+        function frame() {
+            if (!angVel && spinButtonClicked) {
+                const finalSector = sectors[getIndex()];
+                events.fire("spinEnd", finalSector);
+                spinButtonClicked = false;
+                return;
+            }
+
+            angVel *= friction;
+            if (angVel < 0.002) angVel = 0;
+            ang += angVel;
+            ang %= TAU;
+            rotate();
+        }
+
+        function engine() {
+            frame();
+            requestAnimationFrame(engine);
+        }
+
+        function init() {
+            sectors.forEach(drawSector);
+            rotate();
+            engine();
+            spinEl.addEventListener("click", () => {
+                if (!angVel) angVel = rand(0.25, 0.45);
+                spinButtonClicked = true;
+            });
+        }
+
+        init();
+
+        events.addListener("spinEnd", (sector) => {
+            document.getElementById("result").innerText = `🎉 You won: ${sector.label}`;
+        });
     </script>
 </body>
 </html>
