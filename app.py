@@ -56,9 +56,9 @@ st.markdown("""
     .stApp { background-color: #ffebf0; }
     .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
     .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
-    .spin-wheel-container { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .spin-wheel-container { display: flex; flex-direction: column; align-items: center; }
     #spinWheel { width: 90% !important; height: 90% !important; }
-    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
+    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; margin-top: 20px; }
     #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
     .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
     </style>
@@ -83,9 +83,9 @@ with st.form("spin_form"):
             <div class="spin-wheel-container">
                 <canvas id="spinWheel"></canvas>
                 <div class="arrow">↑</div>
+                <button id="spin_btn">Spin</button>
+                <div id="text"><p>Good Luck!</p></div>
             </div>
-            <button id="spin_btn">Spin</button>
-            <div id="text"><p>Good Luck!</p></div>
 
             <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
             <script>
