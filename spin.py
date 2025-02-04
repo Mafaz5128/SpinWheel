@@ -37,16 +37,13 @@ html_code = """
         }
         .wheel-text {
             position: absolute;
+            top: 50%; left: 50%;
+            transform-origin: center center;
             font-size: 14px;
             font-weight: bold;
             color: white;
             z-index: 1;
             text-align: center;
-            transform-origin: center center;
-            left: 50%; top: 50%;
-            width: 100%;
-            height: 100%;
-            line-height: 30px; /* Adjust the line-height to fit the text within the slice */
         }
         button {
             padding: 12px 20px;
@@ -70,12 +67,12 @@ html_code = """
     <div class="wheel-container">
         <div class="pointer"></div>
         <div id="wheel" class="wheel">
-            <!-- Text placed in the center of each slice -->
-            <div class="wheel-text" style="transform: rotate(0deg) translateY(-120px)">💄 Free Lipstick</div>
-            <div class="wheel-text" style="transform: rotate(72deg) translateY(-120px)">🛍️ 10% Off</div>
-            <div class="wheel-text" style="transform: rotate(144deg) translateY(-120px)">💖 Free Gift</div>
-            <div class="wheel-text" style="transform: rotate(216deg) translateY(-120px)">🎁 20% Off</div>
-            <div class="wheel-text" style="transform: rotate(288deg) translateY(-120px)">💌 Thank You</div>
+            <!-- Each slice text is positioned in the center -->
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(0deg) translateY(-120px)">💄 Free Lipstick</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(72deg) translateY(-120px)">🛍️ 10% Off</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(144deg) translateY(-120px)">💖 Free Gift</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(216deg) translateY(-120px)">🎁 20% Off</div>
+            <div class="wheel-text" style="transform: translate(-50%, -50%) rotate(288deg) translateY(-120px)">💌 Thank You</div>
         </div>
     </div>
     <br>
