@@ -16,7 +16,6 @@ html_code = """
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
         .wheel-container { position: relative; display: inline-block; }
-        .wheel { width: 300px; height: 300px; border-radius: 50%; border: 5px solid #ff4081; }
         .pointer {
             position: absolute;
             top: -10px; left: 50%;
@@ -25,89 +24,62 @@ html_code = """
             border-left: 15px solid transparent;
             border-right: 15px solid transparent;
             border-bottom: 30px solid red;
+            z-index: 10;
         }
-        button { padding: 12px 20px; font-size: 18px; background: #ff4081; color: white; border: none; cursor: pointer; margin-top: 15px; border-radius: 5px; }
+        .wheel {
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            border: 5px solid #ff4081;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 18px;
+            background: #ff4081;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
         button:hover { background: #ff0055; }
-        #result { font-size: 20px; font-weight: bold; margin-top: 10px; }
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="wheel-container">
         <div class="pointer"></div>
-        <canvas id="wheel" width="300" height="300"></canvas>
+        <img id="wheel" class="wheel" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Roulette_wheel_blank.svg/300px-Roulette_wheel_blank.svg.png">
     </div>
     <br>
     <button onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
 
     <script>
-        const canvas = document.getElementById("wheel");
-        const ctx = canvas.getContext("2d");
         const prizes = ["💄 Free Lipstick", "🛍️ 10% Off", "💖 Free Gift", "🎁 20% Off", "💌 Thank You"];
-        let spinning = false;
-        let angle = 0;
-        const sliceAngle = (2 * Math.PI) / prizes.length;
-
-        function drawWheel(rotationAngle = 0) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(150, 150);
-            ctx.rotate(rotationAngle);
-
-            let startAngle = 0;
-            for (let i = 0; i < prizes.length; i++) {
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, 150, startAngle, startAngle + sliceAngle);
-                ctx.fillStyle = i % 2 === 0 ? "#ffcccb" : "#ff4081";
-                ctx.fill();
-                ctx.closePath();
-
-                ctx.fillStyle = "black";
-                ctx.font = "bold 14px Arial";
-                ctx.textAlign = "center";
-                ctx.save();
-                ctx.rotate(startAngle + sliceAngle / 2);
-                ctx.fillText(prizes[i], 90, 10);
-                ctx.restore();
-
-                startAngle += sliceAngle;
-            }
-            ctx.restore();
-        }
+        const totalSlices = prizes.length;
+        const sliceAngle = 360 / totalSlices;
+        let lastRotation = 0;
 
         function spinWheel() {
-            if (spinning) return;
-            spinning = true;
-            let totalRotation = Math.random() * 360 + 360 * 5;  
-            let spinTime = 3000;
-            let startTime = null;
-
-            function rotate(timestamp) {
-                if (!startTime) startTime = timestamp;
-                let progress = timestamp - startTime;
-                let easedProgress = easeOut(progress / spinTime);
-                angle = easedProgress * totalRotation * (Math.PI / 180);
-                drawWheel(angle);
-
-                if (progress < spinTime) {
-                    requestAnimationFrame(rotate);
-                } else {
-                    spinning = false;
-                    let finalAngle = (angle % (2 * Math.PI));  
-                    let prizeIndex = Math.floor(((2 * Math.PI) - finalAngle) / sliceAngle) % prizes.length;
-                    document.getElementById("result").innerText = "🎉 You won: " + prizes[prizeIndex] + "!";
-                }
-            }
-
-            requestAnimationFrame(rotate);
+            let randomExtraSpins = Math.floor(Math.random() * 3 + 5) * 360;  // Ensures multiple full spins
+            let randomOffset = Math.floor(Math.random() * 360);  // Random stop position
+            let totalRotation = lastRotation + randomExtraSpins + randomOffset;
+            
+            document.getElementById("wheel").style.transform = `rotate(${totalRotation}deg)`;
+            
+            setTimeout(() => {
+                let finalAngle = totalRotation % 360;  // Normalize to 0-360 degrees
+                let prizeIndex = Math.floor((360 - finalAngle + sliceAngle / 2) / sliceAngle) % totalSlices;
+                document.getElementById("result").innerText = "🎉 You won: " + prizes[prizeIndex] + "!";
+            }, 4000);  // Wait for animation to complete
+            
+            lastRotation = totalRotation;  // Save rotation state
         }
-
-        function easeOut(t) {
-            return --t * t * t + 1;
-        }
-
-        drawWheel();
     </script>
 </body>
 </html>
