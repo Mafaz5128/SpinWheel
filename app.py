@@ -1,7 +1,6 @@
 import streamlit as st
-import pandas as pd
-import random
 import sqlite3
+import pandas as pd
 
 # Initialize SQLite database
 def init_db():
@@ -46,11 +45,6 @@ def get_winners():
         if conn:
             conn.close()
 
-# Get a random prize from the list
-def get_random_prize():
-    prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"]
-    return random.choice(prizes)
-
 # Initialize the database
 init_db()
 
@@ -76,9 +70,7 @@ with st.form("spin_form"):
         if not name or not phone:
             st.error("Please enter both your name and phone number.")
         else:
-            prize = get_random_prize()
-            save_winner(name, phone, prize)
-            st.success(f"🎉 Congratulations {name}, You won {prize}! 🎁")
+            st.success(f"🎉 Good Luck {name}! Spin the wheel and win a prize!")
 
             # Spin wheel HTML & JS Integration
             spin_wheel_html = """
@@ -114,27 +106,21 @@ with st.form("spin_form"):
                     const text = document.getElementById("text");
                     
                     const spinValues = [
-                        { minDegree: 61, maxDegree: 90, value: 100 },
-                        { minDegree: 31, maxDegree: 60, value: 200 },
-                        { minDegree: 0, maxDegree: 30, value: 300 },
-                        { minDegree: 331, maxDegree: 360, value: 400 },
-                        { minDegree: 301, maxDegree: 330, value: 500 },
-                        { minDegree: 271, maxDegree: 300, value: 600 },
-                        { minDegree: 241, maxDegree: 270, value: 700 },
-                        { minDegree: 211, maxDegree: 240, value: 800 },
-                        { minDegree: 181, maxDegree: 210, value: 900 },
-                        { minDegree: 151, maxDegree: 180, value: 1000 },
-                        { minDegree: 121, maxDegree: 150, value: 1100 },
-                        { minDegree: 91, maxDegree: 120, value: 1200 },
+                        { minDegree: 61, maxDegree: 90, prize: "Lipstick" },
+                        { minDegree: 31, maxDegree: 60, prize: "Perfume" },
+                        { minDegree: 0, maxDegree: 30, prize: "Makeup Kit" },
+                        { minDegree: 331, maxDegree: 360, prize: "Nail Polish" },
+                        { minDegree: 301, maxDegree: 330, prize: "Face Mask" },
+                        { minDegree: 271, maxDegree: 300, prize: "Gift Voucher" },
                     ];
                     
-                    const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400", "#138D75", "#F1C40F", "#b163da", "#E74C3C", "#7D3C98", "#138D75"];
-                    const size = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+                    const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
+                    const size = [10, 10, 10, 10, 10, 10];
                     
                     let spinChart = new Chart(spinWheel, {
                         type: "pie",
                         data: {
-                            labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                            labels: ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"],
                             datasets: [{
                                 backgroundColor: spinColors,
                                 data: size,
@@ -159,11 +145,18 @@ with st.form("spin_form"):
                     const generateValue = (angleValue) => {
                         for (let i of spinValues) {
                             if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
-                                text.innerHTML = `<p>Congratulations, You Have Won ${i.value}!</p>`;
+                                text.innerHTML = `<p>Congratulations, You Have Won ${i.prize}!</p>`;
                                 spinBtn.disabled = false;
+                                saveWinner(i.prize);
                                 break;
                             }
                         }
+                    };
+                    
+                    const saveWinner = (prize) => {
+                        // You could call your backend here to save winner data
+                        // For now, display a message
+                        alert("Winner saved: " + prize);
                     };
                     
                     let count = 0;
