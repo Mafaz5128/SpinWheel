@@ -37,9 +37,8 @@ html_code = """
         }
         .wheel-text {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 50%; left: 50%;
+            transform-origin: center center;
             font-size: 16px;
             font-weight: bold;
             color: white;
