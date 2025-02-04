@@ -1,6 +1,8 @@
 import streamlit as st
 import random
+import pandas as pd
 import streamlit.components.v1 as components
+from streamlit_js_eval import streamlit_js_eval
 
 # Define prizes
 prizes = [
@@ -11,6 +13,9 @@ prizes = [
     "💌 20% Off Next Purchase",
     "💕 Free Beauty Consultation"
 ]
+
+# Colors for the segments of the wheel
+colors = ["#FF477E", "#FF85A2", "#FFC1D2", "#FF6188", "#FF92B1", "#FFD6E0"]
 
 # HTML, CSS, and JS for the spinning wheel
 spin_wheel_html = f"""
@@ -61,7 +66,7 @@ spin_wheel_html = f"""
     let canvas = document.getElementById("wheelCanvas");
     let ctx = canvas.getContext("2d");
     let segments = {prizes};
-    let colors = ["#FF477E", "#FF85A2", "#FFC1D2", "#FF6188", "#FF92B1", "#FFD6E0"];
+    let colors = {colors};
     let arc = Math.PI / (segments.length / 2);
     let angle = 0;
     let spinAngleStart = 10;
@@ -121,17 +126,37 @@ spin_wheel_html = f"""
 st.title("💘 Valentine's Spin & Win! 🎡")
 st.markdown("""
 💄 Spin the wheel and win exciting beauty prizes! 🌹  
-Click the **Spin Now!** button and see what you get! 🎁
+Fill out the details, spin the wheel, and see what you win! 🎁
 """)
 
-# Embed HTML for Spin Wheel
-components.html(spin_wheel_html, height=550)
+# Collect customer details (name and phone number)
+with st.form(key='customer_form'):
+    name = st.text_input("Your Name:")
+    phone_number = st.text_input("Your Phone Number:")
+    submit_button = st.form_submit_button("Submit Details and Spin")
 
-# **Streamlit JS Eval to Capture Prize**
-from streamlit_js_eval import streamlit_js_eval
+# Create a DataFrame to store customer details and the winning prize
+if submit_button:
+    # Display customer details
+    st.write(f"Name: {name}")
+    st.write(f"Phone Number: {phone_number}")
+    
+    # Embed HTML for Spin Wheel
+    components.html(spin_wheel_html, height=550)
 
-selected_prize = streamlit_js_eval(js_expressions="window.addEventListener('message', (event) => event.data)")
+    # **Streamlit JS Eval to Capture Prize**
+    selected_prize = streamlit_js_eval(js_expressions="window.addEventListener('message', (event) => event.data)")
 
-if selected_prize:
-    st.balloons()
-    st.success(f"🎉 Congratulations! You won **{selected_prize}**! 💖")
+    # Display result after spin
+    if selected_prize:
+        # Create a DataFrame with customer details and the prize
+        customer_data = pd.DataFrame({
+            "Name": [name],
+            "Phone Number": [phone_number],
+            "Winning Prize": [selected_prize]
+        })
+        
+        # Display the customer data and winning prize
+        st.write(customer_data)
+        st.balloons()
+        st.success(f"🎉 Congratulations! You won **{selected_prize}**! 💖")
