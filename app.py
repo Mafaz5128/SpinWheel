@@ -36,13 +36,12 @@ init_db()
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
+
 st.markdown("""
     <style>
     .stApp { background-color: #ffebf0; }
     .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
     .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; text-align: center; }
-    .spin-wheel-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .arrow { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -100%); font-size: 50px; color: #ff007f; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -68,54 +67,13 @@ if submitted:
 
 # Display the Spin Wheel
 if st.session_state.get("can_spin", False):
-    spin_wheel_html = """
-    <div style='text-align: center;'>
-        <canvas id='spinWheel' width='300' height='300'></canvas>
-        <br>
-        <button id='spin_btn' style='padding: 10px 20px; font-size: 16px; background-color: #ff007f; color: white; border: none; cursor: pointer; border-radius: 5px;'>Spin</button>
-        <p id='result' style='font-size: 18px; font-weight: bold;'></p>
-    </div>
-    
-    <script>
-        const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
-        const spinBtn = document.getElementById("spin_btn");
-        const resultText = document.getElementById("result");
-        const canvas = document.getElementById("spinWheel");
-        const ctx = canvas.getContext("2d");
-
-        function drawWheel() {
-            const colors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
-            const arc = Math.PI * 2 / prizes.length;
-            for (let i = 0; i < prizes.length; i++) {
-                ctx.beginPath();
-                ctx.fillStyle = colors[i];
-                ctx.moveTo(150, 150);
-                ctx.arc(150, 150, 150, arc * i, arc * (i + 1));
-                ctx.lineTo(150, 150);
-                ctx.fill();
-            }
-        }
-        
-        drawWheel();
-
-        spinBtn.addEventListener("click", () => {
-            let angle = Math.floor(Math.random() * 360);
-            canvas.style.transform = `rotate(${angle}deg)`;
-            setTimeout(() => {
-                let prizeIndex = Math.floor((angle / 60) % prizes.length);
-                resultText.innerText = `🎉 You won: ${prizes[prizeIndex]}! 🎉`;
-                window.parent.postMessage({"event": "winner", "prize": prizes[prizeIndex]}, "*");
-            }, 2000);
-        });
-    </script>
-    """
-    st.components.v1.html(spin_wheel_html, height=400)
-
-# Handle Winner Data
-if "winner" in st.session_state:
-    winner_info = st.session_state["winner"]
-    save_winner(st.session_state["player_name"], st.session_state["player_phone"], winner_info["prize"])
-    st.success(f"🎉 Congratulations {st.session_state['player_name']}, you won a {winner_info['prize']}! 🎉")
+    if st.button("Spin the Wheel 🎡"):
+        with st.spinner("Spinning the wheel..."):
+            time.sleep(2)
+            selected_prize = random.choice(prizes)
+            st.session_state["winner_prize"] = selected_prize
+            save_winner(st.session_state["player_name"], st.session_state["player_phone"], selected_prize)
+            st.success(f"🎉 Congratulations {st.session_state['player_name']}, you won a {selected_prize}! 🎉")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
