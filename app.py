@@ -55,7 +55,37 @@ with st.form("spin_form"):
         st.success(f"🎉 Congratulations {name}, You won {prize}! 🎁")
         
         # Show Spin Wheel
-        st.components.v1.html(open("spin_wheel.html").read(), height=500)
+        spin_wheel_html = """
+        <html>
+        <head>
+        <style>
+            .wheel-container { position: relative; width: 300px; height: 300px; }
+            .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(
+                red 0deg 60deg, yellow 60deg 120deg, green 120deg 180deg,
+                blue 180deg 240deg, orange 240deg 300deg, purple 300deg 360deg);
+                transition: transform 3s ease-out; }
+            .arrow { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
+                background: red; clip-path: polygon(100% 0, 0 50%, 100% 100%);
+                transform: translate(-50%, -50%) rotate(-90deg); }
+        </style>
+        <script>
+            function spinWheel() {
+                let wheel = document.getElementById('wheel');
+                let randomDegree = 1800 + Math.floor(Math.random() * 360);
+                wheel.style.transform = 'rotate(' + randomDegree + 'deg)';
+            }
+        </script>
+        </head>
+        <body>
+        <div class='wheel-container'>
+            <div class='arrow'></div>
+            <div class='wheel' id='wheel'></div>
+        </div>
+        <button onclick='spinWheel()'>Spin</button>
+        </body>
+        </html>
+        """
+        st.components.v1.html(spin_wheel_html, height=400)
 
 # Display Winners List
 st.subheader("🎊 Recent Winners 🎊")
