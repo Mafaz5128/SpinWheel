@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+import streamlit.components.v1 as components
 
 # Define prizes
 prizes = [
@@ -100,7 +101,7 @@ spin_wheel_html = f"""
         }} else {{
             setTimeout(() => {{
                 let winningPrize = segments[prizeIndex];
-                Streamlit.setComponentValue(winningPrize);
+                window.parent.postMessage(winningPrize, "*");  // Send prize to Python
             }}, 500);
         }}
     }}
@@ -124,9 +125,13 @@ Click the **Spin Now!** button and see what you get! 🎁
 """)
 
 # Embed HTML for Spin Wheel
-selected_prize = st.components.v1.html(spin_wheel_html, height=550)
+components.html(spin_wheel_html, height=550)
 
-# Confetti Effect
+# **Streamlit JS Eval to Capture Prize**
+from streamlit_js_eval import streamlit_js_eval
+
+selected_prize = streamlit_js_eval(js_expressions="window.addEventListener('message', (event) => event.data)")
+
 if selected_prize:
     st.balloons()
     st.success(f"🎉 Congratulations! You won **{selected_prize}**! 💖")
