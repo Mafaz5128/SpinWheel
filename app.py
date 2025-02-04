@@ -2,9 +2,12 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 
-# Initialize session state to store the winners table if not already initialized
+# Initialize session state to store the winners table and spin status
 if 'winners_table' not in st.session_state:
     st.session_state.winners_table = []
+
+if 'has_spun' not in st.session_state:
+    st.session_state.has_spun = False
 
 # Embed the updated HTML, CSS, and JS directly into the Streamlit app
 html_code = """
@@ -195,6 +198,8 @@ html_code = """
             let prizeWon = finalValue.innerText.replace("You won: ", "");
             let winnerEntry = { name: winnerName, phone: winnerPhone, prize: prizeWon };
             window.parent.postMessage({ action: 'add_winner', winner: winnerEntry }, "*");
+            // Set the flag that the user has spun
+            window.parent.postMessage({ action: 'set_spin_status', status: true }, "*");
           }
         }, 10);
       });
@@ -213,26 +218,29 @@ with st.form(key="customer_form"):
 # If customer form is submitted, store customer info in session state
 if submit_button:
     st.session_state.customer_info = {"name": customer_name, "phone": customer_phone}
+    st.session_state.has_spun = False  # Allow them to spin
 
-# Display the interactive winners table only after form submission
-if 'customer_info' in st.session_state:
-    customer_name = st.session_state.customer_info.get('name', 'N/A')
-    customer_phone = st.session_state.customer_info.get('phone', 'N/A')
+# If customer has already spun, show message and disable spin
+if 'has_spun' in st.session_state and st.session_state.has_spun:
+    st.warning("You've already spun the wheel! Thank you for participating.")
+else:
+    # Display the interactive spin wheel
+    if 'customer_info' in st.session_state:
+        customer_name = st.session_state.customer_info.get('name', 'N/A')
+        customer_phone = st.session_state.customer_info.get('phone', 'N/A')
 
-    st.subheader(f"Welcome, {customer_name} ({customer_phone})!")
-    components.html(html_code, height=800)
+        st.subheader(f"Welcome, {customer_name} ({customer_phone})!")
+        components.html(html_code, height=800)
 
-    # Update the winners table with the new winner's data
-    if 'winner' in st.session_state:
-        st.session_state.winners_table.append(st.session_state.winner)
+    # Handle winner updates from the JavaScript message
+    message = st.query_params.get('winner', None)
+    if message:
+        st.session_state.winners_table.append(message)
+        st.session_state.has_spun = True  # User has spun, so lock them out for future spins
+        st.experimental_rerun()
 
+# Display the winners table interactively
+if st.session_state.winners_table:
     st.subheader("🏆 Winners Table 🏆")
-    if st.session_state.winners_table:
-        winners_df = pd.DataFrame(st.session_state.winners_table)
-        st.dataframe(winners_df)
-
-# Handle winner updates from the JavaScript message
-message = st.query_params.get('winner', None)
-if message:
-    st.session_state.winner = message
-    st.experimental_rerun()
+    winners_df = pd.DataFrame(st.session_state.winners_table)
+    st.dataframe(winners_df)
