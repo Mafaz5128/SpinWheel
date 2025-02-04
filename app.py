@@ -105,7 +105,7 @@ spin_wheel_html = f"""
         }} else {{
             setTimeout(() => {{
                 let winningPrize = segments[prizeIndex];
-                // Set the winning prize to the hidden input field
+                // Set the winning prize to the Streamlit backend using session_state
                 window.parent.postMessage(winningPrize, "*");  // Send prize to Python
             }}, 500);
         }}
@@ -144,11 +144,9 @@ if submit_button:
     # Embed HTML for Spin Wheel
     components.html(spin_wheel_html, height=550)
 
-    # **Streamlit JS Eval to Capture Prize**
-    selected_prize = st.query_params.get("prize", [None])[0]
-
-    # Check if prize was set by the spin wheel
-    if selected_prize:
+    # **Session State** to store the prize when received
+    if 'selected_prize' in st.session_state:
+        selected_prize = st.session_state.selected_prize
         # Create a DataFrame with customer details and the prize
         customer_data = pd.DataFrame({
             "Name": [name],
