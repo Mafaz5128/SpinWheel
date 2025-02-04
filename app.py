@@ -34,7 +34,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Function to create a stylish spin wheel
-def draw_wheel(selected_prize=None, rotation_angle=0):
+def draw_wheel(rotation_angle=0):
     fig = go.Figure()
 
     fig.add_trace(go.Pie(
@@ -42,11 +42,20 @@ def draw_wheel(selected_prize=None, rotation_angle=0):
         values=[1] * len(prizes),
         textinfo="label",
         marker=dict(colors=colors, line=dict(color="black", width=1.5)),
-        hole=0.2
+        hole=0.2,
     ))
 
     # Rotate the wheel dynamically
-    fig.update_traces(rotation=rotation_angle)  # Corrected line for rotation
+    fig.update_traces(rotation=rotation_angle)
+
+    # Add arrow indicator
+    fig.add_shape(
+        type="path",
+        path="M 0.5 1 L 0.45 0.8 L 0.55 0.8 Z",  # Creates a small triangle as an arrow
+        xref="paper", yref="paper",
+        line=dict(color="black"),
+        fillcolor="red"
+    )
 
     fig.update_layout(
         showlegend=False,
@@ -66,25 +75,27 @@ st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this V
 
 # Draw the initial wheel
 rotation_angle = 0
-selected_prize = None
-chart = draw_wheel()
+chart = draw_wheel(rotation_angle)
 wheel_chart = st.plotly_chart(chart)
 
 # Spin button with animation
 if st.button("🎡 Spin the Wheel!"):
     with st.spinner("Spinning... 🎠"):
-        for _ in range(30):  # Simulate spinning effect
-            rotation_angle += random.randint(30, 60)
+        total_time = 15  # 15 seconds spin duration
+        steps = 50  # Number of animation steps
+        for i in range(steps):
+            rotation_angle += random.randint(15, 30)  # Incremental rotation
             rotation_angle %= 360  # Keep it within 360 degrees
             chart = draw_wheel(rotation_angle=rotation_angle)
             wheel_chart = st.plotly_chart(chart)
-            time.sleep(0.1)  # Small delay to create animation effect
+            time.sleep(total_time / steps)  # Smooth transition
 
-    # Final result
-    selected_prize = random.choice(prizes)
+    # Determine the final prize
+    sector_size = 360 / len(prizes)
+    winning_index = int((rotation_angle % 360) / sector_size)
+    selected_prize = prizes[winning_index]
+
     st.success(f"🎉 Congratulations! You won: {selected_prize} 🎁")
-    final_chart = draw_wheel(selected_prize=selected_prize, rotation_angle=rotation_angle)
-    wheel_chart = st.plotly_chart(final_chart)  # Update with final position
 
 # Collect user details
 st.subheader("💌 Claim Your Prize!")
