@@ -59,6 +59,7 @@ st.markdown("""
     #spinWheel { width: 90% !important; height: 90% !important; }
     #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
     #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
+    .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -92,10 +93,11 @@ with st.form("spin_form"):
                     body { background-color: #f7f7f7; font-family: 'PT Serif', serif; }
                     h1 { color: #ff007f; text-align: center; font-size: 2rem; margin-top: 50px; }
                     .container { max-width: 600px; margin: auto; text-align: center; }
-                    .spin-wheel-container { width: 100%; height: 400px; display: flex; justify-content: center; align-items: center; }
+                    .spin-wheel-container { width: 100%; height: 400px; display: flex; justify-content: center; align-items: center; position: relative; }
                     #spinWheel { width: 90% !important; height: 90% !important; }
                     #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
                     #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
+                    .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
                 </style>
             </head>
             <body>
@@ -103,6 +105,7 @@ with st.form("spin_form"):
                     <h1>Spin the Wheel and Win!</h1>
                     <div class="spin-wheel-container">
                         <canvas id="spinWheel"></canvas>
+                        <div class="arrow">↑</div>
                     </div>
                     <button id="spin_btn">Spin</button>
                     <div id="text"><p>Good Luck!</p></div>
@@ -112,22 +115,15 @@ with st.form("spin_form"):
                     const spinBtn = document.getElementById("spin_btn");
                     const text = document.getElementById("text");
                     
-                    const spinValues = [
-                        { minDegree: 61, maxDegree: 90, prize: "Lipstick" },
-                        { minDegree: 31, maxDegree: 60, prize: "Perfume" },
-                        { minDegree: 0, maxDegree: 30, prize: "Makeup Kit" },
-                        { minDegree: 331, maxDegree: 360, prize: "Nail Polish" },
-                        { minDegree: 301, maxDegree: 330, prize: "Face Mask" },
-                        { minDegree: 271, maxDegree: 300, prize: "Gift Voucher" },
-                    ];
-                    
+                    const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
                     const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
                     const size = [10, 10, 10, 10, 10, 10];
+                    let prizeIndex = -1;
                     
                     let spinChart = new Chart(spinWheel, {
                         type: "pie",
                         data: {
-                            labels: ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"],
+                            labels: prizes,
                             datasets: [{
                                 backgroundColor: spinColors,
                                 data: size,
@@ -150,14 +146,11 @@ with st.form("spin_form"):
                     });
                     
                     const generateValue = (angleValue) => {
-                        for (let i of spinValues) {
-                            if (angleValue >= i.minDegree && angleValue <= i.maxDegree) {
-                                text.innerHTML = `<p>Congratulations, You Have Won ${i.prize}!</p>`;
-                                spinBtn.disabled = false;
-                                saveWinner(i.prize);
-                                break;
-                            }
-                        }
+                        const sliceAngle = 360 / prizes.length;
+                        prizeIndex = Math.floor((angleValue + (sliceAngle / 2)) / sliceAngle) % prizes.length;
+                        text.innerHTML = `<p>Congratulations! You won ${prizes[prizeIndex]}</p>`;
+                        spinBtn.disabled = false;
+                        saveWinner(prizes[prizeIndex]);
                     };
                     
                     const saveWinner = (prize) => {
