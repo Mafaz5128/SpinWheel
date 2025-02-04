@@ -145,7 +145,7 @@ if submit_button:
     components.html(spin_wheel_html, height=550)
 
     # **Streamlit JS Eval to Capture Prize**
-    selected_prize = streamlit_js_eval(js_expressions="window.addEventListener('message', (event) => event.data)")
+    selected_prize = streamlit_js_eval(js_expressions="window.addEventListener('message', (event) => {return event.data;})")
 
     # Display result after spin
     if selected_prize:
