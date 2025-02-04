@@ -4,12 +4,12 @@ import numpy as np
 import plotly.graph_objects as go
 import time
 
-# Valentine Theme Colors
-background_color = "#FFE6E6"  # Light pink background
-button_color = "#FF4C4C"  # Red button
-text_color = "#D63384"  # Dark pink text
+# Valentine's Day Theme Colors
+background_color = "#FFE6E6"
+button_color = "#FF4C4C"
+text_color = "#D63384"
 prizes = ["10% Off", "Free Lipstick", "20% Off", "Buy 1 Get 1", "Free Shipping", "Gift Hamper"]
-colors = ["#FF9999", "#FF6666", "#FF4C4C", "#FFB6C1", "#FF69B4", "#FF1493"]  # Stylish Valentine colors
+colors = ["#FF9999", "#FF6666", "#FF4C4C", "#FFB6C1", "#FF69B4", "#FF1493"]
 
 # Custom CSS for Valentine's Theme
 st.markdown(f"""
@@ -33,7 +33,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# Function to create a stylish spin wheel
+# Function to create a spin wheel
 def draw_wheel(rotation_angle=0):
     fig = go.Figure()
 
@@ -45,13 +45,12 @@ def draw_wheel(rotation_angle=0):
         hole=0.2,
     ))
 
-    # Rotate the wheel dynamically
     fig.update_traces(rotation=rotation_angle)
 
     # Add arrow indicator
     fig.add_shape(
         type="path",
-        path="M 0.5 1 L 0.45 0.8 L 0.55 0.8 Z",  # Creates a small triangle as an arrow
+        path="M 0.5 1 L 0.45 0.8 L 0.55 0.8 Z",
         xref="paper", yref="paper",
         line=dict(color="black"),
         fillcolor="red"
@@ -69,28 +68,26 @@ def draw_wheel(rotation_angle=0):
 
     return fig
 
-# Valentine's Day UI
+# UI
 st.title("💖 Valentine's Day Spin & Win! 💖")
 st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this Valentine's Day! 💕")
 
-# Draw the initial wheel
 rotation_angle = 0
 chart = draw_wheel(rotation_angle)
-wheel_chart = st.plotly_chart(chart)
+wheel_chart = st.empty()  # Placeholder for updating chart
+wheel_chart.plotly_chart(chart)
 
-# Spin button with animation
 if st.button("🎡 Spin the Wheel!"):
     with st.spinner("Spinning... 🎠"):
-        total_time = 15  # 15 seconds spin duration
-        steps = 50  # Number of animation steps
+        total_time = 15  
+        steps = 50  
         for i in range(steps):
-            rotation_angle += random.randint(15, 30)  # Incremental rotation
-            rotation_angle %= 360  # Keep it within 360 degrees
+            rotation_angle += random.randint(15, 30)  
+            rotation_angle %= 360  
             chart = draw_wheel(rotation_angle=rotation_angle)
-            wheel_chart = st.plotly_chart(chart)
-            time.sleep(total_time / steps)  # Smooth transition
+            wheel_chart.plotly_chart(chart, clear=True)  # ✅ Fix: Updates without duplicate error
+            time.sleep(total_time / steps)
 
-    # Determine the final prize
     sector_size = 360 / len(prizes)
     winning_index = int((rotation_angle % 360) / sector_size)
     selected_prize = prizes[winning_index]
