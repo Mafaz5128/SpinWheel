@@ -67,9 +67,10 @@ st.markdown("🎁 Spin the wheel and win exciting prizes! Spread the love this V
 
 if "rotation_angle" not in st.session_state:
     st.session_state.rotation_angle = 0
+if "wheel_chart" not in st.session_state:
+    st.session_state.wheel_chart = st.empty()
 
-wheel_chart = st.empty()
-wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
+st.session_state.wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
 
 if st.button("🎡 Spin the Wheel!"):
     with st.spinner("Spinning... 🎠"):
@@ -78,9 +79,10 @@ if st.button("🎡 Spin the Wheel!"):
         for _ in range(steps):
             st.session_state.rotation_angle += random.randint(15, 30)  
             st.session_state.rotation_angle %= 360  
-            wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
+            if _ % 5 == 0:  # Update less frequently to avoid duplicate errors
+                st.session_state.wheel_chart.plotly_chart(draw_wheel(st.session_state.rotation_angle))
             time.sleep(total_time / steps)
-
+    
     sector_size = 360 / len(prizes)
     winning_index = int((st.session_state.rotation_angle % 360) / sector_size)
     selected_prize = prizes[winning_index]
