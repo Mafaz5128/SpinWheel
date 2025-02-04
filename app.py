@@ -1,6 +1,7 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+import random
 
 # Initialize SQLite database
 def init_db():
@@ -79,118 +80,89 @@ with st.form("spin_form"):
 
             # Spin wheel HTML & JS Integration
             spin_wheel_html = """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Spin Wheel</title>
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" />
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.1.0/chartjs-plugin-datalabels.min.js"></script>
-                <style>
-                    body { background-color: #f7f7f7; font-family: 'PT Serif', serif; }
-                    h1 { color: #ff007f; text-align: center; font-size: 2rem; margin-top: 50px; }
-                    .container { max-width: 600px; margin: auto; text-align: center; }
-                    .spin-wheel-container { width: 100%; height: 400px; display: flex; justify-content: center; align-items: center; position: relative; }
-                    #spinWheel { width: 400px !important; height: 400px !important; }
-                    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; }
-                    #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
-                    .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Spin the Wheel and Win!</h1>
-                    <div class="spin-wheel-container">
-                        <canvas id="spinWheel"></canvas>
-                        <div class="arrow">↑</div>
-                    </div>
-                    <button id="spin_btn">Spin</button>
-                    <div id="text"><p>Good Luck!</p></div>
-                </div>
-                <script>
-                    const spinWheel = document.getElementById("spinWheel");
-                    const spinBtn = document.getElementById("spin_btn");
-                    const text = document.getElementById("text");
-                    
-                    const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
-                    const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
-                    const size = [10, 10, 10, 10, 10, 10];
-                    let prizeIndex = -1;
-                    
-                    let spinChart = new Chart(spinWheel, {
-                        type: "pie",
-                        data: {
-                            labels: prizes,
-                            datasets: [{
-                                backgroundColor: spinColors,
-                                data: size,
-                            }],
-                        },
-                        options: {
-                            responsive: true,
-                            animation: { duration: 0 },
-                            plugins: {
-                                tooltip: { enabled: false },
-                                legend: { display: false },
-                                datalabels: {
-                                    rotation: 90,
-                                    color: "#ffffff",
-                                    formatter: (_, context) => context.chart.data.labels[context.dataIndex],
-                                    font: { size: 24 },
-                                },
+            <div class="spin-wheel-container">
+                <canvas id="spinWheel"></canvas>
+                <div class="arrow">↑</div>
+            </div>
+            <button id="spin_btn">Spin</button>
+            <div id="text"><p>Good Luck!</p></div>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+            <script>
+                const spinWheel = document.getElementById("spinWheel");
+                const spinBtn = document.getElementById("spin_btn");
+                const text = document.getElementById("text");
+
+                const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
+                const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
+                const size = [10, 10, 10, 10, 10, 10];
+
+                let spinChart = new Chart(spinWheel, {
+                    type: "pie",
+                    data: {
+                        labels: prizes,
+                        datasets: [{
+                            backgroundColor: spinColors,
+                            data: size,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        animation: { duration: 0 },
+                        plugins: {
+                            tooltip: { enabled: false },
+                            legend: { display: false },
+                            datalabels: {
+                                rotation: 90,
+                                color: "#ffffff",
+                                formatter: (_, context) => context.chart.data.labels[context.dataIndex],
+                                font: { size: 24 },
                             },
                         },
-                    });
-                    
-                    const generateValue = (angleValue) => {
-                        const sliceAngle = 360 / prizes.length;
-                        prizeIndex = Math.floor((angleValue + (sliceAngle / 2)) / sliceAngle) % prizes.length;
-                        text.innerHTML = `<p>Congratulations! You won ${prizes[prizeIndex]}</p>`;
-                        spinBtn.disabled = false;
-                        saveWinner(prizes[prizeIndex]);
-                    };
-                    
-                    const saveWinner = (prize) => {
-                        // Call your backend API or use Streamlit to save the winner
-                        fetch("/save_winner", {
-                            method: "POST",
-                            body: JSON.stringify({ name: "${name}", phone: "${phone}", prize: prize }),
-                            headers: { "Content-Type": "application/json" }
-                        })
-                        .then(response => response.json())
-                        .then(data => alert("Winner saved!"))
-                        .catch(err => alert("Error saving winner: " + err));
-                    };
-                    
-                    let count = 0;
-                    let resultValue = 101;
-                    spinBtn.addEventListener("click", () => {
-                        spinBtn.disabled = true;
-                        text.innerHTML = `<p>Best Of Luck!</p>`;
-                        let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
-                        let rotationInterval = window.setInterval(() => {
-                            spinChart.options.rotation = spinChart.options.rotation + resultValue;
-                            spinChart.update();
-                            if (spinChart.options.rotation >= 360) {
-                                count += 1;
-                                resultValue -= 5;
-                                spinChart.options.rotation = 0;
-                            } else if (count > 15 && spinChart.options.rotation == randomDegree) {
-                                generateValue(randomDegree);
-                                clearInterval(rotationInterval);
-                                count = 0;
-                                resultValue = 101;
-                            }
-                        }, 10);
-                    });
-                </script>
-            </body>
-            </html>
+                    },
+                });
+
+                const generateValue = (angleValue) => {
+                    const sliceAngle = 360 / prizes.length;
+                    const prizeIndex = Math.floor((angleValue + (sliceAngle / 2)) / sliceAngle) % prizes.length;
+                    text.innerHTML = `<p>Congratulations! You won ${prizes[prizeIndex]}</p>`;
+                    spinBtn.disabled = false;
+
+                    // Save the winner to Streamlit backend
+                    window.parent.postMessage({ "event": "winner", "prize": prizes[prizeIndex] }, "*");
+                };
+
+                let count = 0;
+                let resultValue = 101;
+                spinBtn.addEventListener("click", () => {
+                    spinBtn.disabled = true;
+                    text.innerHTML = `<p>Best Of Luck!</p>`;
+                    let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
+                    let rotationInterval = window.setInterval(() => {
+                        spinChart.options.rotation = spinChart.options.rotation + resultValue;
+                        spinChart.update();
+                        if (spinChart.options.rotation >= 360) {
+                            count += 1;
+                            resultValue -= 5;
+                            spinChart.options.rotation = 0;
+                        } else if (count > 15 && spinChart.options.rotation == randomDegree) {
+                            generateValue(randomDegree);
+                            clearInterval(rotationInterval);
+                            count = 0;
+                            resultValue = 101;
+                        }
+                    }, 10);
+                });
+            </script>
             """
             st.components.v1.html(spin_wheel_html, height=600)
+
+            # Handle Winner Data (Python backend)
+            winner_data = st.experimental_get_query_params().get("winner", None)
+            if winner_data:
+                prize = winner_data[0]
+                save_winner(name, phone, prize)
+                st.subheader(f"🎉 Congratulations {name}, you won a {prize}! 🎉")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
