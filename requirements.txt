@@ -1,5 +1,4 @@
 --upgrade pip
-
 streamlit
 pandas
 sqlite3
