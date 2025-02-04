@@ -86,6 +86,7 @@ def draw_wheel(angle):
 if st.session_state.get("can_spin", False):
     if st.button("Spin the Wheel 🎡"):
         with st.spinner("Spinning the wheel..."):
+            # Spin animation (multiple frames)
             angle = 0
             for _ in range(50):  # More frames for smoother animation
                 angle += random.randint(10, 30)
@@ -93,7 +94,8 @@ if st.session_state.get("can_spin", False):
                 buf = draw_wheel(angle)
                 st.image(buf)
                 time.sleep(0.05)  # Faster frame rate for smoother animation
-            
+
+            # Select a prize randomly and save the winner
             selected_prize = random.choice(prizes)
             st.session_state["winner_prize"] = selected_prize
             save_winner(st.session_state["player_name"], st.session_state["player_phone"], selected_prize)
