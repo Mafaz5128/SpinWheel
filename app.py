@@ -92,8 +92,8 @@ with st.form("spin_form"):
                     container-type: inline-size;
                     display: grid;
                     position: relative;
-                    width: 300px; /* Reduced size */
-                    height: 300px; /* Reduced size */
+                    width: 500px; /* Reasonable size */
+                    height: 500px; /* Reasonable size */
                 }
 
                 .ui-wheel-of-fortune::after {
@@ -115,10 +115,10 @@ with st.form("spin_form"):
                     border: 0;
                     border-radius: 50%;
                     cursor: pointer;
-                    font-size: 25px; /* Adjusted font size */
+                    font-size: 30px; /* Adjusted font size */
                     place-self: center;
-                    width: 80px; /* Reduced button size */
-                    height: 80px; /* Reduced button size */
+                    width: 120px; /* Increased button size */
+                    height: 120px; /* Increased button size */
                 }
 
                 ul {
@@ -135,7 +135,7 @@ with st.form("spin_form"):
                     background: hsl(calc(360deg / var(--_items) * calc(var(--_idx))), 100%, 75%);
                     clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
                     display: grid;
-                    font-size: 15px; /* Adjusted font size */
+                    font-size: 20px; /* Increased font size */
                     grid-area: 1 / -1;
                     padding-left: 1ch;
                     rotate: calc(360deg / var(--_items) * calc(var(--_idx) - 1));
@@ -201,7 +201,7 @@ with st.form("spin_form"):
             </body>
             </html>
             """
-            st.components.v1.html(spin_wheel_html, height=500)
+            st.components.v1.html(spin_wheel_html, height=600)
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
