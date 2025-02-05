@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # Set Streamlit Page Config
-st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="🎡")
+st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="🎡", layout ='wide')
 
 # App Title
 st.title("🎡 Spin & Win - Valentine's Day Special!")
@@ -59,14 +59,12 @@ html_code = """
 
     <script>
         const sectors = [
-            { color: "#FFBC03", text: "#333333", label: "Sweets" },
-            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
-            { color: "#FFBC03", text: "#333333", label: "Sweets" },
-            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
-            { color: "#FFBC03", text: "#333333", label: "Sweets + Prize draw" },
-            { color: "#FF5A10", text: "#333333", label: "You lose" },
-            { color: "#FFBC03", text: "#333333", label: "Prize draw" },
-            { color: "#FF5A10", text: "#333333", label: "Sweets" }
+            { color: "#FF0000", text: "#333333", label: "Get 20% Off" },
+            { color: "#FF7F00", text: "#333333", label: "Mystry Box" },
+            { color: "#00FF00", text: "#333333", label: "Buy 1 Get 1" },
+            { color: "#0000FF", text: "#333333", label: "Thank You" },
+            { color: "#8B00FF", text: "#333333", label: "Lip Stick" },
+            { color: "#4B0082", text: "#333333", label: "Voucher" }
         ];
 
         const events = {
