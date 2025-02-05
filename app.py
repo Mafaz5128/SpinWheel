@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit.components.v1 as components
 from streamlit_js_eval import streamlit_js_eval
 
-# Function to initialize database
+# Function to initialize the database
 def init_db():
     conn = sqlite3.connect("winners.db")
     cursor = conn.cursor()
@@ -16,7 +16,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Save winner details to database
+# Save winner details to the database
 def save_winner(name, phone, prize):
     conn = sqlite3.connect("winners.db")
     cursor = conn.cursor()
@@ -24,7 +24,7 @@ def save_winner(name, phone, prize):
     conn.commit()
     conn.close()
 
-# Retrieve all winners from database
+# Retrieve all winners from the database
 def get_winners():
     conn = sqlite3.connect("winners.db")
     df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)
@@ -195,17 +195,15 @@ components.html(html_code, height=600)
 
 # Capture the prize from JavaScript
 prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
-st.write(prize)
+
 if prize:
     st.session_state["prize"] = prize
-
-if "prize" in st.session_state:
-    st.success(f"🎉 Congratulations! You won: {st.session_state['prize']}")
+    st.success(f"🎉 Congratulations! You won: {prize}")
 
     if st.button("Claim Prize"):
         name = st.session_state.get("player_name", "")
         phone = st.session_state.get("player_phone", "")
-        prize = st.session_state["prize"]
+        prize = st.session_state.get("prize", "")
 
         if name and phone and prize:
             save_winner(name, phone, prize)
