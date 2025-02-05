@@ -1,51 +1,18 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import sqlite3
 
-# Set Streamlit Page Config
-st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="🎡", layout='wide')
-
-# Database Setup
-conn = sqlite3.connect("winners.db", check_same_thread=False)
-c = conn.cursor()
-c.execute("""
-    CREATE TABLE IF NOT EXISTS winners (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        phone TEXT,
-        prize TEXT
-    )
-""")
-conn.commit()
-
-# Valentine’s Theme Styling
-st.markdown(
-    """
-    <style>
-        .stApp { background: url('https://img.freepik.com/free-vector/valentines-day-heart-balloons-background_52683-106376.jpg?w=1800'); 
-                 background-size: cover; }
-        .title { font-size: 36px; color: #ff4081; text-align: center; font-weight: bold; }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Title
-st.markdown("<h1 class='title'>🎡 Spin & Win - Valentine's Day Special!</h1>", unsafe_allow_html=True)
-st.write("Enter your name and phone number, then spin the wheel to win amazing prizes!")
-
-# Customer Input Form
-name = st.text_input("Enter Your Name")
-phone = st.text_input("Enter Your Phone Number")
-
-# HTML + JavaScript for Spin Wheel
+# HTML and CSS for the Spin Wheel App
 html_code = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Spin Wheel</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; background: #ffe6f2; }
-        .wheel-container { position: relative; display: inline-block; margin-top: 20px;}
+        body { text-align: center; font-family: Arial, sans-serif; background-color: #ffe6f2; }
+        h1 { color: #e60073; }
+        .wheel-container { position: relative; display: inline-block; margin-top: 50px; }
         .pointer {
             position: absolute;
             top: -15px; left: 50%;
@@ -61,100 +28,115 @@ html_code = """
             border: 5px solid #ff4081;
         }
         button {
-            padding: 12px 20px;
-            font-size: 18px;
+            padding: 10px 18px;
+            font-size: 16px;
             background: #ff4081;
             color: white;
             border: none;
             cursor: pointer;
             margin-top: 15px;
-            border-radius: 8px;
+            border-radius: 5px;
         }
         button:hover { background: #ff0055; }
         #result {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
-            color: #ff4081;
+        }
+        table {
+            width: 70%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ff4081;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background: #ff4081;
+            color: white;
         }
     </style>
 </head>
 <body>
+
+    <h1>💖 Valentine's Spin & Win 💖</h1>
+
+    <div>
+        <input type="text" id="name" placeholder="Enter Your Name">
+        <input type="text" id="phone" placeholder="Enter Your Phone Number">
+        <button onclick="startSpin()">Proceed to Spin</button>
+    </div>
+
     <div class="wheel-container">
         <div class="pointer"></div>
         <canvas id="wheel" width="300" height="300"></canvas>
     </div>
+
     <br>
-    <button id="spin">🎰 Spin the Wheel</button>
+    <button id="spinBtn" onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
 
+    <h2>🎖 Winners List 🎖</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Prize Won</th>
+                <th>Coupon Code</th>
+            </tr>
+        </thead>
+        <tbody id="winnersTable"></tbody>
+    </table>
+
     <script>
-        const sectors = [
-            { color: "#FF0000", text: "#FFFFFF", label: "20% Off" },
-            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
-            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
-            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
-            { color: "#8B00FF", text: "#FFFFFF", label: "Lipstick" },
-            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
-        ];
+        let playerName = "";
+        let playerPhone = "";
+        let winnersList = [];
 
-        let angVel = 0;
-        let ang = 0;
-        let spinButtonClicked = false;
-
-        const getIndex = () => Math.floor(sectors.length - (ang / (2 * Math.PI)) * sectors.length) % sectors.length;
-
-        function rotate() {
-            const sector = sectors[getIndex()];
-            document.querySelector("#wheel").style.transform = rotate(${ang - Math.PI / 2}rad);
+        function generateCouponCode() {
+            return 'VC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
-        function frame() {
-            if (!angVel && spinButtonClicked) {
-                const finalSector = sectors[getIndex()];
-                document.getElementById("result").innerText = 🎉 You won: ${finalSector.label};
-                window.parent.postMessage(finalSector.label, "*");  // Send prize to Streamlit
-                spinButtonClicked = false;
+        function startSpin() {
+            playerName = document.getElementById("name").value;
+            playerPhone = document.getElementById("phone").value;
+
+            if (!playerName || !playerPhone) {
+                alert("Please enter your name and phone number.");
                 return;
             }
-            angVel *= 0.991;
-            ang += angVel;
-            rotate();
+            alert(`Welcome ${playerName}! Click below to spin the wheel.`);
         }
 
-        function engine() { frame(); requestAnimationFrame(engine); }
-
-        function init() {
-            rotate();
-            engine();
-            document.querySelector("#spin").addEventListener("click", () => { if (!angVel) angVel = Math.random() * (0.45 - 0.25) + 0.25; spinButtonClicked = true; });
+        function spinWheel() {
+            if (!playerName || !playerPhone) {
+                alert("Please enter your details first.");
+                return;
+            }
+            const prizes = ["Get 20% Off", "Mystery Box", "Buy 1 Get 1", "Thank You", "Lipstick", "Voucher"];
+            const selectedPrize = prizes[Math.floor(Math.random() * prizes.length)];
+            const couponCode = generateCouponCode();
+            document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${selectedPrize} (Code: ${couponCode})`;
+            winnersList.push({ name: playerName, prize: selectedPrize, code: couponCode });
+            updateWinnersTable();
         }
 
-        init();
+        function updateWinnersTable() {
+            const tableBody = document.getElementById("winnersTable");
+            tableBody.innerHTML = "";
+            winnersList.forEach(winner => {
+                let row = `<tr><td>${winner.name}</td><td>${winner.prize}</td><td>${winner.code}</td></tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
     </script>
+
 </body>
 </html>
 """
 
-# Store Prize after spin
-if name and phone:
-    prize = st.empty()
-    spin = components.html(html_code, height=600)
-    
-    # Receive prize from JS
-    message = st.experimental_get_query_params().get("prize")
-    
-    if message:
-        prize.text(f"🎉 Congratulations {name}, You Won: {message[0]}")
-        
-        # Save winner to database
-        c.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, message[0]))
-        conn.commit()
-
-# Show recent winners
-st.subheader("Recent Winners")
-c.execute("SELECT name, phone, prize FROM winners ORDER BY id DESC LIMIT 5")
-winners = c.fetchall()
-
-# Display winners in table format
-st.table(winners)
+# Embed HTML in Streamlit
+st.components.v1.html(html_code, height=700, scrolling=True)
