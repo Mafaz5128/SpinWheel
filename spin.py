@@ -1,12 +1,42 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import sqlite3
 
 # Set Streamlit Page Config
-st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="🎡", layout ='wide')
+st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="🎡", layout='wide')
 
-# App Title
-st.title("🎡 Spin & Win - Valentine's Day Special!")
-st.write("Click the **Spin the Wheel** button and try your luck!")
+# Database Setup
+conn = sqlite3.connect("winners.db", check_same_thread=False)
+c = conn.cursor()
+c.execute("""
+    CREATE TABLE IF NOT EXISTS winners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        phone TEXT,
+        prize TEXT
+    )
+""")
+conn.commit()
+
+# Valentine’s Theme Styling
+st.markdown(
+    """
+    <style>
+        .stApp { background: url('https://img.freepik.com/free-vector/valentines-day-heart-balloons-background_52683-106376.jpg?w=1800'); 
+                 background-size: cover; }
+        .title { font-size: 36px; color: #ff4081; text-align: center; font-weight: bold; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Title
+st.markdown("<h1 class='title'>🎡 Spin & Win - Valentine's Day Special!</h1>", unsafe_allow_html=True)
+st.write("Enter your name and phone number, then spin the wheel to win amazing prizes!")
+
+# Customer Input Form
+name = st.text_input("Enter Your Name")
+phone = st.text_input("Enter Your Phone Number")
 
 # HTML + JavaScript for Spin Wheel
 html_code = """
@@ -14,8 +44,8 @@ html_code = """
 <html>
 <head>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        .wheel-container { position: relative; display: inline-block; margin-top: 50px;}
+        body { text-align: center; font-family: Arial, sans-serif; background: #ffe6f2; }
+        .wheel-container { position: relative; display: inline-block; margin-top: 20px;}
         .pointer {
             position: absolute;
             top: -15px; left: 50%;
@@ -31,20 +61,21 @@ html_code = """
             border: 5px solid #ff4081;
         }
         button {
-            padding: 10px 18px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 18px;
             background: #ff4081;
             color: white;
             border: none;
             cursor: pointer;
             margin-top: 15px;
-            border-radius: 5px;
+            border-radius: 8px;
         }
         button:hover { background: #ff0055; }
         #result {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             margin-top: 10px;
+            color: #ff4081;
         }
     </style>
 </head>
@@ -59,118 +90,71 @@ html_code = """
 
     <script>
         const sectors = [
-            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
-            { color: "#FF7F00", text: "#FFFFFF", label: "Mystry Box" },
+            { color: "#FF0000", text: "#FFFFFF", label: "20% Off" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
             { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
             { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
-            { color: "#8B00FF", text: "#FFFFFF", label: "Lip Stick" },
+            { color: "#8B00FF", text: "#FFFFFF", label: "Lipstick" },
             { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
         ];
 
-        const events = {
-            listeners: {},
-            addListener: function (eventName, fn) {
-                this.listeners[eventName] = this.listeners[eventName] || [];
-                this.listeners[eventName].push(fn);
-            },
-            fire: function (eventName, ...args) {
-                if (this.listeners[eventName]) {
-                    for (let fn of this.listeners[eventName]) {
-                        fn(...args);
-                    }
-                }
-            }
-        };
-
-        const rand = (m, M) => Math.random() * (M - m) + m;
-        const tot = sectors.length;
-        const spinEl = document.querySelector("#spin");
-        const canvas = document.querySelector("#wheel");
-        const ctx = canvas.getContext("2d");
-        const dia = canvas.width;
-        const rad = dia / 2;
-        const PI = Math.PI;
-        const TAU = 2 * PI;
-        const arc = TAU / sectors.length;
-
-        const friction = 0.991;
         let angVel = 0;
         let ang = 0;
         let spinButtonClicked = false;
 
-        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
-
-        function drawSector(sector, i) {
-            const ang = arc * i;
-            ctx.save();
-
-            // COLOR
-            ctx.beginPath();
-            ctx.fillStyle = sector.color;
-            ctx.moveTo(rad, rad);
-            ctx.arc(rad, rad, rad, ang, ang + arc);
-            ctx.lineTo(rad, rad);
-            ctx.fill();
-
-            // TEXT
-            ctx.translate(rad, rad);
-            ctx.rotate(ang + arc / 2);
-            ctx.textAlign = "right";
-            ctx.fillStyle = sector.text;
-            ctx.font = "bold 18px 'Lato', sans-serif";
-            ctx.fillText(sector.label, rad - 8, 8);
-
-            ctx.restore();
-        }
+        const getIndex = () => Math.floor(sectors.length - (ang / (2 * Math.PI)) * sectors.length) % sectors.length;
 
         function rotate() {
             const sector = sectors[getIndex()];
-            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
-
-            spinEl.textContent = !angVel ? "SPIN" : sector.label;
-            spinEl.style.background = sector.color;
-            spinEl.style.color = sector.text;
+            document.querySelector("#wheel").style.transform = `rotate(${ang - Math.PI / 2}rad)`;
         }
 
         function frame() {
             if (!angVel && spinButtonClicked) {
                 const finalSector = sectors[getIndex()];
-                events.fire("spinEnd", finalSector);
+                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                window.parent.postMessage(finalSector.label, "*");  // Send prize to Streamlit
                 spinButtonClicked = false;
                 return;
             }
-
-            angVel *= friction;
-            if (angVel < 0.002) angVel = 0;
+            angVel *= 0.991;
             ang += angVel;
-            ang %= TAU;
             rotate();
         }
 
-        function engine() {
-            frame();
-            requestAnimationFrame(engine);
-        }
+        function engine() { frame(); requestAnimationFrame(engine); }
 
         function init() {
-            sectors.forEach(drawSector);
             rotate();
             engine();
-            spinEl.addEventListener("click", () => {
-                if (!angVel) angVel = rand(0.25, 0.45);
-                spinButtonClicked = true;
-            });
+            document.querySelector("#spin").addEventListener("click", () => { if (!angVel) angVel = Math.random() * (0.45 - 0.25) + 0.25; spinButtonClicked = true; });
         }
 
         init();
-
-        events.addListener("spinEnd", (sector) => {
-            document.getElementById("result").innerText = `🎉 You won: ${sector.label}`;
-        });
     </script>
 </body>
 </html>
 """
 
-# Embed HTML + JS in Streamlit
-components.html(html_code, height=1024)
+# Store Prize after spin
+if name and phone:
+    prize = st.empty()
+    spin = components.html(html_code, height=600)
+    
+    # Receive prize from JS
+    message = st.experimental_get_query_params().get("prize")
+    
+    if message:
+        prize.text(f"🎉 Congratulations {name}, You Won: {message[0]}")
+        
+        # Save winner to database
+        c.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, message[0]))
+        conn.commit()
+
+# Show recent winners
+st.subheader("Recent Winners")
+c.execute("SELECT name, phone, prize FROM winners ORDER BY id DESC LIMIT 5")
+winners = c.fetchall()
+
+# Display winners in table format
+st.table(winners)
