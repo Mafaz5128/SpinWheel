@@ -1,9 +1,11 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
 
+# Display large greeting message
 st.markdown("<h1 style='text-align: center; color: #e60073;'>💖 Valentine's Spin & Win 💖</h1>", unsafe_allow_html=True)
 
 # User Input Form
@@ -21,14 +23,17 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-# JavaScript for Spin Wheel with prize retrieval
+        # Display large greeting for spin action
+        st.markdown(f"<h2 style='text-align: center; color: #ff4081;'>Good Luck, {name}!</h2>", unsafe_allow_html=True)
+
+# JavaScript for Spin Wheel with prize retrieval and passing data to Streamlit
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
     <script>
-        function sendPrizeToStreamlit(prize) {
-            window.parent.postMessage({ "prize": prize }, "*");
+        function sendPrizeToStreamlit(name, phone, prize) {
+            window.parent.postMessage({ "name": name, "phone": phone, "prize": prize }, "*");
         }
         
         window.addEventListener("message", (event) => {
@@ -37,6 +42,13 @@ html_code = """
                 if (prizeInput) {
                     prizeInput.value = event.data.prize;
                 }
+                document.getElementById("result").innerText = `🎉 Congratulations! You won: ${event.data.prize}`;
+                // Send data to Streamlit
+                window.parent.postMessage({
+                    "name": event.data.name,
+                    "phone": event.data.phone,
+                    "prize": event.data.prize
+                }, "*");
             }
         });
     </script>
@@ -137,7 +149,8 @@ html_code = """
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
                 document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                sendPrizeToStreamlit(finalSector.label);
+                // Send the prize, name, and phone back to Streamlit
+                sendPrizeToStreamlit('John Doe', '123-456-7890', finalSector.label);
                 return;
             }
             angVel *= friction;
@@ -165,3 +178,25 @@ html_code = """
 
 # Embed Spin Wheel
 components.html(html_code, height=600)
+
+# Initialize the session state if it doesn't exist
+if "winner_data" not in st.session_state:
+    st.session_state["winner_data"] = []
+
+# Capture the prize, name, and phone number from the message
+if "name" in st.session_state and "phone" in st.session_state and "prize" in st.session_state:
+    winner_name = st.session_state["name"]
+    winner_phone = st.session_state["phone"]
+    winner_prize = st.session_state["prize"]
+    
+    # Add the winner data to the session state
+    st.session_state["winner_data"].append({
+        "Name": winner_name,
+        "Phone Number": winner_phone,
+        "Prize Won": winner_prize
+    })
+
+# Display the table of winners
+if st.session_state["winner_data"]:
+    df = pd.DataFrame(st.session_state["winner_data"])
+    st.table(df)
