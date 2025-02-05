@@ -23,7 +23,7 @@ html_code = """
             width: 0; height: 0;
             border-left: 12px solid transparent;
             border-right: 12px solid transparent;
-            border-bottom: 25px solid red;
+            border-bottom: 25px solid black;
             z-index: 10;
         }
         canvas {
@@ -59,12 +59,12 @@ html_code = """
 
     <script>
         const sectors = [
-            { color: "#FF0000", text: "#333333", label: "Get 20% Off" },
-            { color: "#FF7F00", text: "#333333", label: "Mystry Box" },
-            { color: "#00FF00", text: "#333333", label: "Buy 1 Get 1" },
-            { color: "#0000FF", text: "#333333", label: "Thank You" },
-            { color: "#8B00FF", text: "#333333", label: "Lip Stick" },
-            { color: "#4B0082", text: "#333333", label: "Voucher" }
+            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Mystry Box" },
+            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
+            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
+            { color: "#8B00FF", text: "#FFFFFF", label: "Lip Stick" },
+            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
         ];
 
         const events = {
