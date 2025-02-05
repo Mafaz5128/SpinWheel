@@ -15,7 +15,7 @@ html_code = """
 <head>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        .wheel-container { position: relative;}
+        .wheel-container { position: relative; display: inline-block;}
         .pointer {
             position: absolute;
             top: -15px; left: 50%;
