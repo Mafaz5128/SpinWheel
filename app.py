@@ -163,7 +163,7 @@ html_code = """
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
                 document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                window.parent.postMessage({ prize: finalSector.label }, "*");
+                window.parent.streamlit.setComponentValue(finalSector.label);
                 return;
             }
             angVel *= friction;
@@ -192,16 +192,18 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-# Retrieve the prize from JavaScript
-if "prize" in st.session_state:
-    prize = st.session_state["prize"]
-    name = st.session_state["player_name"]
-    phone = st.session_state["player_phone"]
-    save_winner(name, phone, prize)
-    #st.success(f"🎉 Congratulations {name}! You won: {prize}")
+prize = st.experimental_get_query_params().get("prize", [None])[0]
 
-# Display Recent Winners
-st.subheader("🎊 Recent Winners 🎊")
+if prize:
+    st.session_state["prize"] = prize
+    name = st.session_state.get("player_name", "")
+    phone = st.session_state.get("player_phone", "")
+    
+    if name and phone:
+        save_winner(name, phone, prize)
+        st.success(f"🎉 Congratulations {name}! You won: {prize}")
+
+# Display updated winners table
 winners_df = get_winners()
 if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
