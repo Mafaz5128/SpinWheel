@@ -246,5 +246,4 @@ winners_df = get_winners()
 if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
 else:
-    st.info("No winners yet. Be the first to spin the wheel!"), the error is File "/mount/src/spinwheel/app.py", line 239, in <module>
-    save_winner(name, phone, prize)
+    st.info("No winners yet. Be the first to spin the wheel!")
