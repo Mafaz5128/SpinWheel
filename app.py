@@ -74,15 +74,15 @@ html_code = """
 <head>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        .wheel-container { position: relative; display: inline-block; }
+        .wheel-container { position: relative; display: inline-block; margin-top: 50px;}
         .pointer {
             position: absolute;
-            top: -20px; left: 50%;
+            top: -15px; left: 50%;
             transform: translateX(-50%);
             width: 0; height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 30px solid red;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 25px solid black;
             z-index: 10;
         }
         canvas {
@@ -90,8 +90,8 @@ html_code = """
             border: 5px solid #ff4081;
         }
         button {
-            padding: 12px 20px;
-            font-size: 18px;
+            padding: 10px 18px;
+            font-size: 16px;
             background: #ff4081;
             color: white;
             border: none;
@@ -101,7 +101,7 @@ html_code = """
         }
         button:hover { background: #ff0055; }
         #result {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
         }
@@ -110,7 +110,7 @@ html_code = """
 <body>
     <div class="wheel-container">
         <div class="pointer"></div>
-        <canvas id="wheel" width="400" height="400"></canvas>
+        <canvas id="wheel" width="300" height="300"></canvas>
     </div>
     <br>
     <button id="spin">🎰 Spin the Wheel</button>
@@ -118,14 +118,12 @@ html_code = """
 
     <script>
         const sectors = [
-            { color: "#FFBC03", text: "#333333", label: "Sweets" },
-            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
-            { color: "#FFBC03", text: "#333333", label: "Sweets" },
-            { color: "#FF5A10", text: "#333333", label: "Prize draw" },
-            { color: "#FFBC03", text: "#333333", label: "Sweets + Prize draw" },
-            { color: "#FF5A10", text: "#333333", label: "You lose" },
-            { color: "#FFBC03", text: "#333333", label: "Prize draw" },
-            { color: "#FF5A10", text: "#333333", label: "Sweets" }
+            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Mystry Box" },
+            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
+            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
+            { color: "#8B00FF", text: "#FFFFFF", label: "Lip Stick" },
+            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
         ];
 
         const events = {
@@ -178,8 +176,8 @@ html_code = """
             ctx.rotate(ang + arc / 2);
             ctx.textAlign = "right";
             ctx.fillStyle = sector.text;
-            ctx.font = "bold 20px 'Lato', sans-serif";
-            ctx.fillText(sector.label, rad - 10, 10);
+            ctx.font = "bold 18px 'Lato', sans-serif";
+            ctx.fillText(sector.label, rad - 8, 8);
 
             ctx.restore();
         }
@@ -234,7 +232,7 @@ html_code = """
 """
 
 # Embed the updated HTML code for Spin Wheel
-components.html(html_code, height=500)
+components.html(html_code, height=1024)
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
