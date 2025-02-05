@@ -82,7 +82,7 @@ html_code = """
             position: absolute;
             width: 50px;
             height: 80px;
-            background-color: #0000FF;
+            background-color: #ff66b2;
             border-radius: 50%;
             animation: floatBalloon 5s infinite ease-in-out, moveBalloon 10s linear infinite;
         }
@@ -197,7 +197,7 @@ html_code = """
     <script>
         let playerName = "";
         let playerPhone = "";
-        let winnersList = [];
+        let winnersList = JSON.parse(localStorage.getItem('winnersList')) || [];
 
         function generateCouponCode() {
             return 'VC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -269,6 +269,7 @@ html_code = """
                 
                 // Save winner data
                 winnersList.push({ name: playerName, prize: finalSector.label, code: couponCode });
+                localStorage.setItem('winnersList', JSON.stringify(winnersList));
                 updateWinnersTable();
 
                 return;
@@ -320,6 +321,7 @@ html_code = """
         function init() {
             sectors.forEach(drawSector);
             rotate();
+            updateWinnersTable();
         }
 
         init();
