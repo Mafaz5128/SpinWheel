@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
@@ -25,7 +26,7 @@ if submitted:
         # Display large greeting for spin action
         st.markdown(f"<h2 style='text-align: center; color: #ff4081;'>Good Luck, {name}!</h2>", unsafe_allow_html=True)
 
-# HTML & JavaScript for Spin Wheel and Winners Table
+# JavaScript for Spin Wheel with prize retrieval and passing data to Streamlit
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -33,24 +34,21 @@ html_code = """
     <script>
         function sendPrizeToStreamlit(name, phone, prize) {
             window.parent.postMessage({ "name": name, "phone": phone, "prize": prize }, "*");
-            addToTable(name, phone, prize);
         }
-
-        function addToTable(name, phone, prize) {
-            let table = document.getElementById("winnersTable");
-            let row = table.insertRow(-1);
-            let cell1 = row.insertCell(0);
-            let cell2 = row.insertCell(1);
-            let cell3 = row.insertCell(2);
-            cell1.innerHTML = name;
-            cell2.innerHTML = phone;
-            cell3.innerHTML = prize;
-        }
-
+        
         window.addEventListener("message", (event) => {
             if (event.data.prize) {
+                var prizeInput = window.parent.document.querySelector("input[aria-label='Your Prize:']");
+                if (prizeInput) {
+                    prizeInput.value = event.data.prize;
+                }
                 document.getElementById("result").innerText = `🎉 Congratulations! You won: ${event.data.prize}`;
-                sendPrizeToStreamlit(event.data.name, event.data.phone, event.data.prize);
+                // Send data to Streamlit
+                window.parent.postMessage({
+                    "name": event.data.name,
+                    "phone": event.data.phone,
+                    "prize": event.data.prize
+                }, "*");
             }
         });
     </script>
@@ -87,22 +85,6 @@ html_code = """
             font-weight: bold;
             margin-top: 10px;
         }
-        table {
-            margin-top: 20px;
-            border-collapse: collapse;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #ff4081;
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -114,17 +96,86 @@ html_code = """
     <button id="spin">🎰 Spin the Wheel</button>
     <p id="result"></p>
 
-    <h2>Winners List</h2>
-    <table id="winnersTable">
-        <tr>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Prize</th>
-        </tr>
-    </table>
+    <script>
+        const sectors = [
+            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
+            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
+            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
+            { color: "#8B00FF", text: "#FFFFFF", label: "Lipstick" },
+            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
+        ];
+
+        const rand = (m, M) => Math.random() * (M - m) + m;
+        const tot = sectors.length;
+        const spinEl = document.querySelector("#spin");
+        const canvas = document.querySelector("#wheel");
+        const ctx = canvas.getContext("2d");
+        const dia = canvas.width;
+        const rad = dia / 2;
+        const PI = Math.PI;
+        const TAU = 2 * PI;
+        const arc = TAU / sectors.length;
+
+        const friction = 0.991;
+        let angVel = 0;
+        let ang = 0;
+
+        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
+
+        function drawSector(sector, i) {
+            const ang = arc * i;
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = sector.color;
+            ctx.moveTo(rad, rad);
+            ctx.arc(rad, rad, rad, ang, ang + arc);
+            ctx.lineTo(rad, rad);
+            ctx.fill();
+            ctx.translate(rad, rad);
+            ctx.rotate(ang + arc / 2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = sector.text;
+            ctx.font = "bold 18px 'Lato', sans-serif";
+            ctx.fillText(sector.label, rad - 8, 8);
+            ctx.restore();
+        }
+
+        function rotate() {
+            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+        }
+
+        function frame() {
+            if (!angVel) {
+                const finalSector = sectors[getIndex()];
+                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                // Send the prize, name, and phone back to Streamlit
+                sendPrizeToStreamlit('John Doe', '123-456-7890', finalSector.label);
+                return;
+            }
+            angVel *= friction;
+            if (angVel < 0.002) angVel = 0;
+            ang += angVel;
+            ang %= TAU;
+            rotate();
+            requestAnimationFrame(frame);
+        }
+
+        function init() {
+            sectors.forEach(drawSector);
+            rotate();
+            spinEl.addEventListener("click", () => {
+                if (!angVel) angVel = rand(0.25, 0.45);
+                requestAnimationFrame(frame);
+            });
+        }
+
+        init();
+    </script>
 </body>
 </html>
 """
 
 # Embed Spin Wheel
 components.html(html_code, height=600)
+
