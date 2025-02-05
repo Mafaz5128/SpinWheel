@@ -248,7 +248,3 @@ if not winners_df.empty:
 else:
     st.info("No winners yet. Be the first to spin the wheel!"), the error is File "/mount/src/spinwheel/app.py", line 239, in <module>
     save_winner(name, phone, prize)
-File "/mount/src/spinwheel/app.py", line 24, in save_winner
-    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
-File "/home/adminuser/venv/lib/python3.12/site-packages/streamlit/delta_generator.py", line 347, in wrapper
-    raise StreamlitAPIException(message)
