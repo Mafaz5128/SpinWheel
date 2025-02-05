@@ -163,7 +163,7 @@ html_code = """
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
                 document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                window.parent.streamlit.setComponentValue(finalSector.label);
+                window.prize = finalSector.label;
                 return;
             }
             angVel *= friction;
@@ -192,7 +192,10 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-prize = st.query_params.get("prize", [None])[0]
+from streamlit_js_eval import streamlit_js_eval
+
+# Capture the prize from JavaScript
+prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
 
 if prize:
     st.session_state["prize"] = prize
@@ -209,4 +212,3 @@ if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
 else:
     st.info("No winners yet. Be the first to spin the wheel!")
-
