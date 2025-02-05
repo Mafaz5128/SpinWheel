@@ -36,15 +36,7 @@ init_db()
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
 
-st.markdown("""
-    <style>
-    .stApp { background-color: #ffebf0; }
-    .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
-    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; text-align: center; }
-    </style>
-    """, unsafe_allow_html=True)
-
-st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #e60073;'>💖 Valentine's Spin & Win 💖</h1>", unsafe_allow_html=True)
 
 # User Input Form
 with st.form("spin_form"):
@@ -61,14 +53,19 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-# HTML + JavaScript for Spin Wheel
+# JavaScript for Spin Wheel with prize retrieval
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
+    <script>
+        function sendPrizeToStreamlit(prize) {
+            window.parent.postMessage({ "prize": prize }, "*");
+        }
+    </script>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        .wheel-container { position: relative; display: inline-block; margin-top: 50px;}
+        .wheel-container { position: relative; display: inline-block; margin-top: 50px; }
         .pointer {
             position: absolute;
             top: -15px; left: 50%;
@@ -162,8 +159,8 @@ html_code = """
         function frame() {
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
-                window.prize = finalSector.label;  // Ensure it's set early
-                document.getElementById("result").innerText = `🎉 You won: ${window.prize}`;
+                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                sendPrizeToStreamlit(finalSector.label);
                 return;
             }
             angVel *= friction;
@@ -192,29 +189,24 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-# Capture the prize from JavaScript
-if 'prize' not in st.session_state:
-    st.session_state['prize'] = None
+# Capture Prize using st_js_eval
+prize = st.text_input("Your Prize:", key="prize_input", disabled=True)
+prize = st_js_eval("window.parent.postMessage({ prize: document.getElementById('result').innerText }, '*');", key="prize_capture")
 
-# Use a form to capture the prize and update the session state
-with st.form("prize_form"):
-    prize = st.text_input("Prize", value=st.session_state.get('prize', ''), disabled=True)
-    claim_prize = st.form_submit_button("Claim Prize")
+if prize:
+    st.session_state["prize"] = prize
 
-if claim_prize:
-    name = st.session_state.get("player_name", "")
-    phone = st.session_state.get("player_phone", "")
-    prize = st.session_state.get("prize", "")
-
-    if name and phone and prize:
-        save_winner(name, phone, prize)
-        st.success(f"🎉 {name}, your prize has been saved!")
-        st.session_state['prize'] = None  # Reset the prize after claiming
-        st.experimental_rerun()  # Refresh the page to update the winners list
+# Claim Prize Button
+if st.button("Claim Prize"):
+    if "player_name" in st.session_state and "player_phone" in st.session_state and "prize" in st.session_state:
+        save_winner(st.session_state["player_name"], st.session_state["player_phone"], st.session_state["prize"])
+        st.success(f"🎉 {st.session_state['player_name']}! Your prize has been saved!")
+        st.session_state.pop("prize", None)
+        st.experimental_rerun()
 
 # Display updated winners table
 winners_df = get_winners()
 if not winners_df.empty:
-    st.table(winners_df[['name', 'phone', 'prize']])
+    st.dataframe(winners_df[['name', 'phone', 'prize']])
 else:
     st.info("No winners yet. Be the first to spin the wheel!")
