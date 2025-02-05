@@ -217,4 +217,4 @@ winners_df = get_winners()
 if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
 else:
-    st.info("No winners yet. Be the first to spin the wheel!")reomve the data base concept
+    st.info("No winners yet. Be the first to spin the wheel!")
