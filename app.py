@@ -1,37 +1,5 @@
 import streamlit as st
-import sqlite3
-import pandas as pd
 import streamlit.components.v1 as components
-
-# Function to initialize the database
-def init_db():
-    conn = sqlite3.connect("winners.db")
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                       name TEXT NOT NULL, 
-                       phone TEXT NOT NULL, 
-                       prize TEXT NOT NULL)''')
-    conn.commit()
-    conn.close()
-
-# Save winner details to the database
-def save_winner(name, phone, prize):
-    conn = sqlite3.connect("winners.db")
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
-    conn.commit()
-    conn.close()
-
-# Retrieve all winners from the database
-def get_winners():
-    conn = sqlite3.connect("winners.db")
-    df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)
-    conn.close()
-    return df
-
-# Initialize the database
-init_db()
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
@@ -207,14 +175,6 @@ if prize_captured:
 # Claim Prize Button
 if st.button("Claim Prize"):
     if "player_name" in st.session_state and "player_phone" in st.session_state and "prize" in st.session_state:
-        save_winner(st.session_state["player_name"], st.session_state["player_phone"], st.session_state["prize"])
-        st.success(f"🎉 {st.session_state['player_name']}! Your prize has been saved!")
+        st.success(f"🎉 {st.session_state['player_name']}! You've won {st.session_state['prize']}!")
         st.session_state.pop("prize", None)
         st.experimental_rerun()
-
-# Display updated winners table
-winners_df = get_winners()
-if not winners_df.empty:
-    st.dataframe(winners_df[['name', 'phone', 'prize']])
-else:
-    st.info("No winners yet. Be the first to spin the wheel!")
