@@ -162,7 +162,7 @@ html_code = f"""
         function frame() {{
             if (!angVel && spinButtonClicked) {{
                 const finalSector = sectors[getIndex()];
-                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                document.getElementById("result").innerText = "🎉 You won: " + finalSector.label;
                 updateWinner(finalSector.label);
                 spinButtonClicked = false;
                 return;
