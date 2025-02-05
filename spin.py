@@ -173,4 +173,4 @@ html_code = """
 """
 
 # Embed HTML + JS in Streamlit
-components.html(html_code, height=800)
+components.html(html_code, height=1024)
