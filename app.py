@@ -48,7 +48,6 @@ st.markdown("""
 
 st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_allow_html=True)
 
-
 # User Input Form
 with st.form("spin_form"):
     name = st.text_input("Enter Your Name", placeholder="John Doe")
@@ -222,6 +221,7 @@ html_code = """
 
         events.addListener("spinEnd", (sector) => {
             document.getElementById("result").innerText = `🎉 You won: ${sector.label}`;
+            Streamlit.setComponentValue(sector.label);
         });
     </script>
 </body>
@@ -229,7 +229,16 @@ html_code = """
 """
 
 # Embed the updated HTML code for Spin Wheel
-components.html(html_code, height=1024)
+result = components.html(html_code, height=1024)
+
+# Save the result to the database and update the recent winners table
+if result and "player_name" in st.session_state and "player_phone" in st.session_state:
+    prize = result
+    name = st.session_state["player_name"]
+    phone = st.session_state["player_phone"]
+    save_winner(name, phone, prize)
+    st.session_state["can_spin"] = False
+    st.success(f"🎉 Congratulations {name}! You won: {prize}")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
@@ -237,4 +246,4 @@ winners_df = get_winners()
 if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
 else:
-    st.info("No winners yet. Be the first to spin the wheel!") 
+    st.info("No winners yet. Be the first to spin the wheel!")
