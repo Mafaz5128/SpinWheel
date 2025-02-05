@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import streamlit.components.v1 as components
+from streamlit_js_eval import streamlit_js_eval
 
 # Function to initialize database
 def init_db():
@@ -61,7 +62,7 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-# HTML + JavaScript for Spin Wheel (with Fixed Communication)
+# HTML + JavaScript for Spin Wheel
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -162,8 +163,8 @@ html_code = """
         function frame() {
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
-                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                window.prize = finalSector.label;
+                window.prize = finalSector.label;  // Ensure it's set early
+                document.getElementById("result").innerText = `🎉 You won: ${window.prize}`;
                 return;
             }
             angVel *= friction;
@@ -192,19 +193,23 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-from streamlit_js_eval import streamlit_js_eval
-
 # Capture the prize from JavaScript
 prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
 
 if prize:
     st.session_state["prize"] = prize
-    name = st.session_state.get("player_name", "")
-    phone = st.session_state.get("player_phone", "")
-    
-    if name and phone:
-        save_winner(name, phone, prize)
-        st.success(f"🎉 Congratulations {name}! You won: {prize}")
+
+if "prize" in st.session_state:
+    st.success(f"🎉 Congratulations! You won: {st.session_state['prize']}")
+
+    if st.button("Claim Prize"):
+        name = st.session_state.get("player_name", "")
+        phone = st.session_state.get("player_phone", "")
+        prize = st.session_state["prize"]
+
+        if name and phone and prize:
+            save_winner(name, phone, prize)
+            st.success(f"🎉 {name}, your prize has been saved!")
 
 # Display updated winners table
 winners_df = get_winners()
