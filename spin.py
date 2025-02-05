@@ -106,13 +106,13 @@ html_code = """
 
         function rotate() {
             const sector = sectors[getIndex()];
-            document.querySelector("#wheel").style.transform = `rotate(${ang - Math.PI / 2}rad)`;
+            document.querySelector("#wheel").style.transform = rotate(${ang - Math.PI / 2}rad);
         }
 
         function frame() {
             if (!angVel && spinButtonClicked) {
                 const finalSector = sectors[getIndex()];
-                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                document.getElementById("result").innerText = 🎉 You won: ${finalSector.label};
                 window.parent.postMessage(finalSector.label, "*");  // Send prize to Streamlit
                 spinButtonClicked = false;
                 return;
