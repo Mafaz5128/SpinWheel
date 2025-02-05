@@ -62,6 +62,15 @@ html_code = """
         function sendPrizeToStreamlit(prize) {
             window.parent.postMessage({ "prize": prize }, "*");
         }
+        
+        window.addEventListener("message", (event) => {
+            if (event.data.prize) {
+                var prizeInput = window.parent.document.querySelector("input[aria-label='Your Prize:']");
+                if (prizeInput) {
+                    prizeInput.value = event.data.prize;
+                }
+            }
+        });
     </script>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
@@ -189,12 +198,11 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-# Capture Prize using st_js_eval
-prize = st.text_input("Your Prize:", key="prize_input", disabled=True)
-prize = st_js_eval("window.parent.postMessage({ prize: document.getElementById('result').innerText }, '*');", key="prize_capture")
+# Capture Prize
+prize_captured = st.text_input("Your Prize:", "", key="prize_input", disabled=True)
 
-if prize:
-    st.session_state["prize"] = prize
+if prize_captured:
+    st.session_state["prize"] = prize_captured
 
 # Claim Prize Button
 if st.button("Claim Prize"):
