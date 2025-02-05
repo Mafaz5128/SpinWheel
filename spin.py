@@ -11,9 +11,20 @@ html_code = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Valentine's Spin Wheel</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; background-color: #ffe6f2; }
-        h1 { color: #e60073; }
-        .wheel-container { position: relative; display: inline-block; margin-top: 50px; }
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #ffe6f2;
+            overflow: hidden;
+        }
+        h1 {
+            color: #e60073;
+        }
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 50px;
+        }
         .pointer {
             position: absolute;
             top: -15px; left: 50%;
@@ -38,11 +49,19 @@ html_code = """
             margin-top: 15px;
             border-radius: 5px;
         }
-        button:hover { background: #ff0055; }
+        button:hover {
+            background: #ff0055;
+        }
         #result {
             font-size: 18px;
             font-weight: bold;
             margin-top: 10px;
+        }
+        #goodLuck {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff4081;
+            margin-top: 20px;
         }
         table {
             width: 70%;
@@ -59,6 +78,56 @@ html_code = """
             background: #ff4081;
             color: white;
         }
+        .balloon {
+            position: absolute;
+            width: 50px;
+            height: 80px;
+            background-color: #ff66b2;
+            border-radius: 50%;
+            animation: floatBalloon 5s infinite ease-in-out;
+        }
+        .heart {
+            position: absolute;
+            font-size: 40px;
+            color: red;
+            animation: floatHeart 4s infinite ease-in-out;
+        }
+
+        @keyframes floatBalloon {
+            0% {
+                bottom: -80px;
+                left: calc(50% - 25px);
+                opacity: 1;
+            }
+            50% {
+                bottom: 100%;
+                left: calc(50% - 25px);
+                opacity: 0.5;
+            }
+            100% {
+                bottom: -80px;
+                left: calc(50% - 25px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes floatHeart {
+            0% {
+                bottom: -50px;
+                left: calc(50% - 20px);
+                opacity: 1;
+            }
+            50% {
+                bottom: 80%;
+                left: calc(50% - 20px);
+                opacity: 0.7;
+            }
+            100% {
+                bottom: -50px;
+                left: calc(50% - 20px);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -70,6 +139,8 @@ html_code = """
         <input type="text" id="phone" placeholder="Enter Your Phone Number">
         <button onclick="startSpin()">Proceed to Spin</button>
     </div>
+
+    <div id="goodLuck"></div>
 
     <div class="wheel-container">
         <div class="pointer"></div>
@@ -109,7 +180,8 @@ html_code = """
                 alert("Please enter your name and phone number.");
                 return;
             }
-            alert(`Welcome ${playerName}! Click below to spin the wheel.`);
+            document.getElementById("goodLuck").innerText = `Good luck, ${playerName}! Click below to spin the wheel.`;
+            showBalloonsAndHearts();
         }
 
         const sectors = [
@@ -194,6 +266,24 @@ html_code = """
                 let row = `<tr><td>${winner.name}</td><td>${winner.prize}</td><td>${winner.code}</td></tr>`;
                 tableBody.innerHTML += row;
             });
+        }
+
+        function showBalloonsAndHearts() {
+            for (let i = 0; i < 5; i++) {
+                const balloon = document.createElement("div");
+                balloon.classList.add("balloon");
+                balloon.style.left = `${Math.random() * 100}%`;
+                balloon.style.animationDuration = `${Math.random() * 2 + 4}s`;
+                document.body.appendChild(balloon);
+            }
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement("div");
+                heart.classList.add("heart");
+                heart.innerText = "❤️";
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.animationDuration = `${Math.random() * 2 + 4}s`;
+                document.body.appendChild(heart);
+            }
         }
 
         function init() {
