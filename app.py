@@ -162,8 +162,8 @@ html_code = """
         function frame() {
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
-                window.prize = finalSector.label;  // Ensure it's set early
-                document.getElementById("result").innerText = `🎉 You won: ${window.prize}`;
+                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                window.parent.postMessage({ prize: finalSector.label }, "*");
                 return;
             }
             angVel *= friction;
@@ -189,32 +189,12 @@ html_code = """
 </html>
 """
 
-# Embed Spin Wheel
 components.html(html_code, height=600)
 
-# Capture the prize from JavaScript
-if 'prize' not in st.session_state:
-    st.session_state['prize'] = None
-
-# Use a form to capture the prize and update the session state
-with st.form("prize_form"):
-    prize = st.text_input("Prize", value=st.session_state.get('prize', ''), disabled=True)
-    claim_prize = st.form_submit_button("Claim Prize")
-
-if claim_prize:
-    name = st.session_state.get("player_name", "")
-    phone = st.session_state.get("player_phone", "")
-    prize = st.session_state.get("prize", "")
-
-    if name and phone and prize:
-        save_winner(name, phone, prize)
-        st.success(f"🎉 {name}, your prize has been saved!")
-        st.session_state['prize'] = None  # Reset the prize after claiming
-        st.experimental_rerun()  # Refresh the page to update the winners list
-
-# Display updated winners table
+# Display winners
 winners_df = get_winners()
 if not winners_df.empty:
+    st.write("### 🎉 Recent Winners")
     st.table(winners_df[['name', 'phone', 'prize']])
 else:
     st.info("No winners yet. Be the first to spin the wheel!")
