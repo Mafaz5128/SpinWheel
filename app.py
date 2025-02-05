@@ -21,7 +21,7 @@ def init_db():
 def save_winner(name, phone, prize):
     conn = sqlite3.connect("winners.db")
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, result))
     conn.commit()
     conn.close()
 
