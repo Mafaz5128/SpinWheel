@@ -165,16 +165,3 @@ html_code = """
 
 # Embed Spin Wheel
 components.html(html_code, height=600)
-
-# Capture Prize
-prize_captured = st.text_input("Your Prize:", "", key="prize_input", disabled=True)
-
-if prize_captured:
-    st.session_state["prize"] = prize_captured
-
-# Claim Prize Button
-if st.button("Claim Prize"):
-    if "player_name" in st.session_state and "player_phone" in st.session_state and "prize" in st.session_state:
-        st.success(f"🎉 {st.session_state['player_name']}! You've won {st.session_state['prize']}!")
-        st.session_state.pop("prize", None)
-        st.experimental_rerun()
