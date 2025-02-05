@@ -193,13 +193,15 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-# Capture the prize from JavaScript
+# Capture the prize from JavaScript (waiting for the prize to be available)
 prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
 
+# If the prize is captured
 if prize:
     st.session_state["prize"] = prize
     st.success(f"🎉 Congratulations! You won: {prize}")
 
+    # Save the winner's information to the database
     if st.button("Claim Prize"):
         name = st.session_state.get("player_name", "")
         phone = st.session_state.get("player_phone", "")
