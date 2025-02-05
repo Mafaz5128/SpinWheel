@@ -221,7 +221,7 @@ html_code = """
 
         events.addListener("spinEnd", (sector) => {
             document.getElementById("result").innerText = `🎉 You won: ${sector.label}`;
-            Streamlit.setComponentValue(sector.label);
+             window.parent.postMessage({ prize: sector.label }, "*");
         });
     </script>
 </body>
@@ -230,7 +230,6 @@ html_code = """
 
 # Embed the updated HTML code for Spin Wheel
 result = components.html(html_code, height=1024)
-print(result)
 # Save the result to the database and update the recent winners table
 if result and "player_name" in st.session_state and "player_phone" in st.session_state:
     prize = result
