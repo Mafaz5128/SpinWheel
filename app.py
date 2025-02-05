@@ -191,7 +191,7 @@ html_code = """
 """
 
 # Embed Spin Wheel
-components.html(html_code, height=600)
+st.components.html(html_code, height=600)
 
 # Capture the prize from JavaScript
 prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
