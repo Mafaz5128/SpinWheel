@@ -198,7 +198,7 @@ if "prize" in st.session_state:
     name = st.session_state["player_name"]
     phone = st.session_state["player_phone"]
     save_winner(name, phone, prize)
-    st.success(f"🎉 Congratulations {name}! You won: {prize}")
+    #st.success(f"🎉 Congratulations {name}! You won: {prize}")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
