@@ -82,50 +82,81 @@ html_code = """
             position: absolute;
             width: 50px;
             height: 80px;
-            background-color: #ff66b2;
+            background-color: #0000FF;
             border-radius: 50%;
-            animation: floatBalloon 5s infinite ease-in-out;
+            animation: floatBalloon 5s infinite ease-in-out, moveBalloon 10s linear infinite;
         }
         .heart {
             position: absolute;
             font-size: 40px;
             color: red;
-            animation: floatHeart 4s infinite ease-in-out;
+            animation: floatHeart 4s infinite ease-in-out, moveHeart 7s linear infinite;
         }
 
         @keyframes floatBalloon {
             0% {
                 bottom: -80px;
-                left: calc(50% - 25px);
+                left: 50%;
                 opacity: 1;
-            }
-            50% {
-                bottom: 100%;
-                left: calc(50% - 25px);
-                opacity: 0.5;
             }
             100% {
-                bottom: -80px;
-                left: calc(50% - 25px);
-                opacity: 1;
+                bottom: 100%;
+                left: 50%;
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes moveBalloon {
+            0% {
+                left: 50%;
+                transform: rotate(0deg);
+            }
+            25% {
+                left: 60%;
+                transform: rotate(15deg);
+            }
+            50% {
+                left: 40%;
+                transform: rotate(-15deg);
+            }
+            75% {
+                left: 30%;
+                transform: rotate(10deg);
+            }
+            100% {
+                left: 50%;
+                transform: rotate(0deg);
             }
         }
 
         @keyframes floatHeart {
             0% {
                 bottom: -50px;
-                left: calc(50% - 20px);
+                left: 50%;
                 opacity: 1;
-            }
-            50% {
-                bottom: 80%;
-                left: calc(50% - 20px);
-                opacity: 0.7;
             }
             100% {
-                bottom: -50px;
-                left: calc(50% - 20px);
-                opacity: 1;
+                bottom: 100%;
+                left: 50%;
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes moveHeart {
+            0% {
+                left: 50%;
+            }
+            25% {
+                left: 60%;
+            }
+            50% {
+                left: 40%;
+            }
+            75% {
+                left: 20%;
+            }
+            100% {
+                left: 50%;
             }
         }
     </style>
