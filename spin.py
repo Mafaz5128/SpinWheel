@@ -82,7 +82,7 @@ html_code = """
             position: absolute;
             width: 50px;
             height: 80px;
-            background-color: #ff66b2;
+            background-color: #4169E1;
             border-radius: 50%;
             animation: floatBalloon 5s infinite ease-in-out, moveBalloon 10s linear infinite;
         }
