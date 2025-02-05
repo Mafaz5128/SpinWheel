@@ -1,12 +1,15 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
+import streamlit.components.v1 as components
 
-# Streamlit UI Setup
+# Set up Streamlit Page
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
 
-# Display large greeting message
 st.markdown("<h1 style='text-align: center; color: #e60073;'>💖 Valentine's Spin & Win 💖</h1>", unsafe_allow_html=True)
+
+# Initialize session state for storing winners
+if "winner_data" not in st.session_state:
+    st.session_state["winner_data"] = []
 
 # User Input Form
 with st.form("spin_form"):
@@ -23,34 +26,44 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-        # Display large greeting for spin action
-        st.markdown(f"<h2 style='text-align: center; color: #ff4081;'>Good Luck, {name}!</h2>", unsafe_allow_html=True)
+# Retrieve prize data from URL query parameters
+query_params = st.experimental_get_query_params()
+if "name" in query_params and "phone" in query_params and "prize" in query_params:
+    winner_name = query_params["name"][0]
+    winner_phone = query_params["phone"][0]
+    winner_prize = query_params["prize"][0]
 
-# JavaScript for Spin Wheel with prize retrieval and passing data to Streamlit
+    # Store the winner in session state
+    st.session_state["winner_data"].append({
+        "Name": winner_name,
+        "Phone Number": winner_phone,
+        "Prize Won": winner_prize
+    })
+
+    # Clear the query parameters to avoid duplicate entries
+    st.experimental_set_query_params()
+
+# Display the winners table
+if st.session_state["winner_data"]:
+    st.markdown("## 🎉 Winners List")
+    df = pd.DataFrame(st.session_state["winner_data"])
+    st.table(df)
+
+# JavaScript for the Spin Wheel
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
     <script>
-        function sendPrizeToStreamlit(name, phone, prize) {
-            window.parent.postMessage({ "name": name, "phone": phone, "prize": prize }, "*");
+        function sendPrizeToStreamlit(prize) {
+            let name = "{name}";
+            let phone = "{phone}";
+            let url = new URL(window.location.href);
+            url.searchParams.set("name", name);
+            url.searchParams.set("phone", phone);
+            url.searchParams.set("prize", prize);
+            window.location.href = url; // Refresh page with updated parameters
         }
-        
-        window.addEventListener("message", (event) => {
-            if (event.data.prize) {
-                var prizeInput = window.parent.document.querySelector("input[aria-label='Your Prize:']");
-                if (prizeInput) {
-                    prizeInput.value = event.data.prize;
-                }
-                document.getElementById("result").innerText = `🎉 Congratulations! You won: ${event.data.prize}`;
-                // Send data to Streamlit
-                window.parent.postMessage({
-                    "name": event.data.name,
-                    "phone": event.data.phone,
-                    "prize": event.data.prize
-                }, "*");
-            }
-        });
     </script>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
@@ -149,8 +162,7 @@ html_code = """
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
                 document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                // Send the prize, name, and phone back to Streamlit
-                sendPrizeToStreamlit('John Doe', '123-456-7890', finalSector.label);
+                sendPrizeToStreamlit(finalSector.label);
                 return;
             }
             angVel *= friction;
@@ -174,29 +186,7 @@ html_code = """
     </script>
 </body>
 </html>
-"""
+""".replace("{name}", st.session_state.get("player_name", "")).replace("{phone}", st.session_state.get("player_phone", ""))
 
 # Embed Spin Wheel
 components.html(html_code, height=600)
-
-# Initialize the session state if it doesn't exist
-if "winner_data" not in st.session_state:
-    st.session_state["winner_data"] = []
-
-# Capture the prize, name, and phone number from the message
-if "name" in st.session_state and "phone" in st.session_state and "prize" in st.session_state:
-    winner_name = st.session_state["name"]
-    winner_phone = st.session_state["phone"]
-    winner_prize = st.session_state["prize"]
-    
-    # Add the winner data to the session state
-    st.session_state["winner_data"].append({
-        "Name": winner_name,
-        "Phone Number": winner_phone,
-        "Prize Won": winner_prize
-    })
-
-# Display the table of winners
-if st.session_state["winner_data"]:
-    df = pd.DataFrame(st.session_state["winner_data"])
-    st.table(df)
