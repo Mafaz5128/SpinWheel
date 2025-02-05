@@ -2,15 +2,15 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 
-# Streamlit UI Setup
+# Set page title
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
 
-# Display large greeting message
-st.markdown("<h1 style='text-align: center; color: #e60073;'>💖 Valentine's Spin & Win 💖</h1>", unsafe_allow_html=True)
-
-# Initialize session state for results if not set
+# Initialize session state
 if "results" not in st.session_state:
-    st.session_state["results"] = pd.DataFrame(columns=["Name", "Phone", "Prize"])
+    st.session_state["results"] = []
+
+# Display header
+st.markdown("<h1 style='text-align: center; color: #e60073;'>💖 Valentine's Spin & Win 💖</h1>", unsafe_allow_html=True)
 
 # User Input Form
 with st.form("spin_form"):
@@ -27,44 +27,36 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-        # Display large greeting for spin action
-        st.markdown(f"<h2 style='text-align: center; color: #ff4081;'>Good Luck, {name}!</h2>", unsafe_allow_html=True)
-
-# JavaScript for Spin Wheel with prize retrieval and passing data to Streamlit
+# JavaScript + HTML for Spin Wheel
 html_code = """
 <!DOCTYPE html>
 <html>
 <head>
     <script>
         function sendPrizeToStreamlit(name, phone, prize) {
-            const message = { "name": name, "phone": phone, "prize": prize };
-            window.parent.postMessage(message, "*");
+            const message = { name: name, phone: phone, prize: prize };
+            fetch('/_st_prize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(message)
+            }).then(response => response.json()).then(data => {
+                console.log("Sent to Streamlit:", data);
+            });
         }
-        
-        window.addEventListener("message", (event) => {
-            if (event.data.prize) {
-                document.getElementById("result").innerText = `🎉 Congratulations! You won: ${event.data.prize}`;
-                sendPrizeToStreamlit(event.data.name, event.data.phone, event.data.prize);
-            }
-        });
+
+        function spinWheel() {
+            const prizes = ["Get 20% Off", "Mystery Box", "Buy 1 Get 1", "Thank You", "Lipstick", "Voucher"];
+            const selectedPrize = prizes[Math.floor(Math.random() * prizes.length)];
+            
+            document.getElementById("result").innerText = `🎉 You won: ${selectedPrize}`;
+            
+            sendPrizeToStreamlit('""" + st.session_state.get("player_name", "Unknown") + """', 
+                                 '""" + st.session_state.get("player_phone", "Unknown") + """', 
+                                 selectedPrize);
+        }
     </script>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        .wheel-container { position: relative; display: inline-block; margin-top: 50px; }
-        .pointer {
-            position: absolute;
-            top: -15px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 25px solid black;
-            z-index: 10;
-        }
-        canvas {
-            border-radius: 50%;
-            border: 5px solid #ff4081;
-        }
         button {
             padding: 10px 18px;
             font-size: 16px;
@@ -84,96 +76,30 @@ html_code = """
     </style>
 </head>
 <body>
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="300" height="300"></canvas>
-    </div>
-    <br>
-    <button id="spin">🎰 Spin the Wheel</button>
+    <button onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
-
-    <script>
-        const sectors = [
-            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
-            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
-            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
-            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
-            { color: "#8B00FF", text: "#FFFFFF", label: "Lipstick" },
-            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
-        ];
-
-        const rand = (m, M) => Math.random() * (M - m) + m;
-        const tot = sectors.length;
-        const spinEl = document.querySelector("#spin");
-        const canvas = document.querySelector("#wheel");
-        const ctx = canvas.getContext("2d");
-        const dia = canvas.width;
-        const rad = dia / 2;
-        const PI = Math.PI;
-        const TAU = 2 * PI;
-        const arc = TAU / sectors.length;
-
-        const friction = 0.991;
-        let angVel = 0;
-        let ang = 0;
-
-        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
-
-        function drawSector(sector, i) {
-            const ang = arc * i;
-            ctx.save();
-            ctx.beginPath();
-            ctx.fillStyle = sector.color;
-            ctx.moveTo(rad, rad);
-            ctx.arc(rad, rad, rad, ang, ang + arc);
-            ctx.lineTo(rad, rad);
-            ctx.fill();
-            ctx.translate(rad, rad);
-            ctx.rotate(ang + arc / 2);
-            ctx.textAlign = "right";
-            ctx.fillStyle = sector.text;
-            ctx.font = "bold 18px 'Lato', sans-serif";
-            ctx.fillText(sector.label, rad - 8, 8);
-            ctx.restore();
-        }
-
-        function rotate() {
-            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
-        }
-
-        function frame() {
-            if (!angVel) {
-                const finalSector = sectors[getIndex()];
-                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                sendPrizeToStreamlit('John Doe', '123-456-7890', finalSector.label);
-                return;
-            }
-            angVel *= friction;
-            if (angVel < 0.002) angVel = 0;
-            ang += angVel;
-            ang %= TAU;
-            rotate();
-            requestAnimationFrame(frame);
-        }
-
-        function init() {
-            sectors.forEach(drawSector);
-            rotate();
-            spinEl.addEventListener("click", () => {
-                if (!angVel) angVel = rand(0.25, 0.45);
-                requestAnimationFrame(frame);
-            });
-        }
-
-        init();
-    </script>
 </body>
 </html>
 """
 
-# Embed Spin Wheel
-components.html(html_code, height=600)
+# Embed the spin wheel
+components.html(html_code, height=300)
 
-# Display results
-st.subheader("📜 Spin Results")
-st.dataframe(st.session_state["results"])
+# Function to capture data from JavaScript
+def capture_prize():
+    import json
+    from streamlit.web.server.websocket_headers import get_websocket_headers
+    
+    headers = get_websocket_headers()
+    data = json.loads(headers.get("st-prize", "{}"))
+    
+    if data:
+        st.session_state["results"].append(data)
+
+# Store prize results
+capture_prize()
+
+# Display Spin Results
+st.markdown("## 🎉 Spin Results")
+df = pd.DataFrame(st.session_state["results"], columns=["Name", "Phone", "Prize"])
+st.dataframe(df)
