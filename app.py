@@ -39,6 +39,10 @@ st.set_page_config(page_title="Spin & Win | Valentine's Special", page_icon="�
 st.title("🎡 Spin & Win - Valentine's Day Special!")
 st.write("Click the **Spin the Wheel** button and try your luck!")
 
+# User Input Form for Winner Details
+name = st.text_input("Enter your Name:")
+phone = st.text_input("Enter your Phone Number:")
+
 # HTML + JavaScript for Spin Wheel
 html_code = """
 <!DOCTYPE html>
@@ -144,6 +148,7 @@ html_code = """
                     clearInterval(interval);
                     const finalSector = sectors[Math.floor(tot - (ang / TAU) * tot) % tot];
                     document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                    fetch('/winner?prize=' + finalSector.label);
                 }
             }, 10);
         }
@@ -157,3 +162,11 @@ html_code = """
 """
 
 components.html(html_code, height=500)
+
+if "prize" in st.experimental_get_query_params():
+    prize = st.experimental_get_query_params()["prize"][0]
+    if name and phone:
+        save_winner(name, phone, prize)
+        st.success(f"🎉 Congratulations {name}, you've won: {prize}!")
+    else:
+        st.warning("Please enter your name and phone number before spinning.")
