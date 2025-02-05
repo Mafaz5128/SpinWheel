@@ -1,7 +1,9 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
-from streamlit_js_eval import streamlit_js_eval  # For JS-Python communication
+import random
+import time
+import streamlit.components.v1 as components
 
 # Initialize SQLite database
 def init_db():
@@ -61,7 +63,7 @@ if submitted:
         st.session_state["can_spin"] = True
         st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
 
-# HTML + JavaScript for Spin Wheel
+# HTML + JavaScript for Spin Wheel (Updated Version)
 html_code = """
 <!DOCTYPE html>
 <html>
@@ -113,12 +115,27 @@ html_code = """
     <script>
         const sectors = [
             { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
-            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Mystry Box" },
             { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
             { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
             { color: "#8B00FF", text: "#FFFFFF", label: "Lip Stick" },
             { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
         ];
+
+        const events = {
+            listeners: {},
+            addListener: function (eventName, fn) {
+                this.listeners[eventName] = this.listeners[eventName] || [];
+                this.listeners[eventName].push(fn);
+            },
+            fire: function (eventName, ...args) {
+                if (this.listeners[eventName]) {
+                    for (let fn of this.listeners[eventName]) {
+                        fn(...args);
+                    }
+                }
+            }
+        };
 
         const rand = (m, M) => Math.random() * (M - m) + m;
         const tot = sectors.length;
@@ -130,6 +147,7 @@ html_code = """
         const PI = Math.PI;
         const TAU = 2 * PI;
         const arc = TAU / sectors.length;
+
         const friction = 0.991;
         let angVel = 0;
         let ang = 0;
@@ -140,35 +158,45 @@ html_code = """
         function drawSector(sector, i) {
             const ang = arc * i;
             ctx.save();
+
+            // COLOR
             ctx.beginPath();
             ctx.fillStyle = sector.color;
             ctx.moveTo(rad, rad);
             ctx.arc(rad, rad, rad, ang, ang + arc);
             ctx.lineTo(rad, rad);
             ctx.fill();
+
+            // TEXT
             ctx.translate(rad, rad);
             ctx.rotate(ang + arc / 2);
             ctx.textAlign = "right";
             ctx.fillStyle = sector.text;
-            ctx.font = "bold 18px Arial";
-            ctx.fillText(sector.label, rad - 10, 10);
+            ctx.font = "bold 18px 'Lato', sans-serif";
+            ctx.fillText(sector.label, rad - 8, 8);
+
             ctx.restore();
         }
 
         function rotate() {
             const sector = sectors[getIndex()];
             canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+
+            spinEl.textContent = !angVel ? "SPIN" : sector.label;
+            spinEl.style.background = sector.color;
+            spinEl.style.color = sector.text;
         }
 
         function frame() {
             if (!angVel && spinButtonClicked) {
                 const finalSector = sectors[getIndex()];
-                window.spinResult = finalSector.label;
-                document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
+                events.fire("spinEnd", finalSector);
                 spinButtonClicked = false;
                 return;
             }
+
             angVel *= friction;
+            if (angVel < 0.002) angVel = 0;
             ang += angVel;
             ang %= TAU;
             rotate();
@@ -190,22 +218,37 @@ html_code = """
         }
 
         init();
+
+        events.addListener("spinEnd", (sector) => {
+            document.getElementById("result").innerText = `🎉 You won: ${sector.label}`;
+            Streamlit.setComponentValue(sector.label);
+        });
     </script>
 </body>
 </html>
 """
 
-# Embed the HTML Spin Wheel
-components.html(html_code, height=600)
+# Embed the updated HTML code for Spin Wheel
+result = components.html(html_code, height=1024)
 
-# Capture the prize from JavaScript
-prize = streamlit_js_eval("window.spinResult", want_output=True)
-
-if prize and "player_name" in st.session_state and "player_phone" in st.session_state:
-    save_winner(st.session_state["player_name"], st.session_state["player_phone"], prize)
-    st.success(f"🎉 Congratulations {st.session_state['player_name']}! You won: {prize}")
+# Save the result to the database and update the recent winners table
+if result and "player_name" in st.session_state and "player_phone" in st.session_state:
+    prize = result
+    name = st.session_state["player_name"]
+    phone = st.session_state["player_phone"]
+    save_winner(name, phone, prize)
+    st.session_state["can_spin"] = False
+    st.success(f"🎉 Congratulations {name}! You won: {prize}")
 
 # Display Recent Winners
 st.subheader("🎊 Recent Winners 🎊")
 winners_df = get_winners()
-st.table(winners_df[['name', 'phone', 'prize']])
+if not winners_df.empty:
+    st.table(winners_df[['name', 'phone', 'prize']])
+else:
+    st.info("No winners yet. Be the first to spin the wheel!"), the error is File "/mount/src/spinwheel/app.py", line 239, in <module>
+    save_winner(name, phone, prize)
+File "/mount/src/spinwheel/app.py", line 24, in save_winner
+    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+File "/home/adminuser/venv/lib/python3.12/site-packages/streamlit/delta_generator.py", line 347, in wrapper
+    raise StreamlitAPIException(message)
