@@ -111,17 +111,79 @@ html_code = """
             alert(`Welcome ${playerName}! Click below to spin the wheel.`);
         }
 
+        const sectors = [
+            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
+            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
+            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
+            { color: "#8B00FF", text: "#FFFFFF", label: "Lipstick" },
+            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
+        ];
+
+        const rand = (m, M) => Math.random() * (M - m) + m;
+        const tot = sectors.length;
+        const canvas = document.querySelector("#wheel");
+        const ctx = canvas.getContext("2d");
+        const dia = canvas.width;
+        const rad = dia / 2;
+        const PI = Math.PI;
+        const TAU = 2 * PI;
+        const arc = TAU / tot;
+
+        let angVel = 0;
+        let ang = 0;
+        const friction = 0.991;
+        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
+
+        function drawSector(sector, i) {
+            const ang = arc * i;
+            ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = sector.color;
+            ctx.moveTo(rad, rad);
+            ctx.arc(rad, rad, rad, ang, ang + arc);
+            ctx.lineTo(rad, rad);
+            ctx.fill();
+            ctx.translate(rad, rad);
+            ctx.rotate(ang + arc / 2);
+            ctx.textAlign = "right";
+            ctx.fillStyle = sector.text;
+            ctx.font = "bold 18px Arial";
+            ctx.fillText(sector.label, rad - 10, 10);
+            ctx.restore();
+        }
+
+        function rotate() {
+            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+        }
+
+        function frame() {
+            if (!angVel) {
+                const finalSector = sectors[getIndex()];
+                let couponCode = generateCouponCode();
+                document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
+                
+                // Save winner data
+                winnersList.push({ name: playerName, prize: finalSector.label, code: couponCode });
+                updateWinnersTable();
+
+                return;
+            }
+            angVel *= friction;
+            if (angVel < 0.002) angVel = 0;
+            ang += angVel;
+            ang %= TAU;
+            rotate();
+            requestAnimationFrame(frame);
+        }
+
         function spinWheel() {
             if (!playerName || !playerPhone) {
                 alert("Please enter your details first.");
                 return;
             }
-            const prizes = ["Get 20% Off", "Mystery Box", "Buy 1 Get 1", "Thank You", "Lipstick", "Voucher"];
-            const selectedPrize = prizes[Math.floor(Math.random() * prizes.length)];
-            const couponCode = generateCouponCode();
-            document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${selectedPrize} (Code: ${couponCode})`;
-            winnersList.push({ name: playerName, prize: selectedPrize, code: couponCode });
-            updateWinnersTable();
+            if (!angVel) angVel = rand(0.25, 0.45);
+            requestAnimationFrame(frame);
         }
 
         function updateWinnersTable() {
@@ -132,6 +194,13 @@ html_code = """
                 tableBody.innerHTML += row;
             });
         }
+
+        function init() {
+            sectors.forEach(drawSector);
+            rotate();
+        }
+
+        init();
     </script>
 
 </body>
