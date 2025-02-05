@@ -1,47 +1,66 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
-import streamlit.components.v1 as components
-from streamlit_js_eval import streamlit_js_eval
+import random
 
-# Function to initialize the database
+# Initialize SQLite database
 def init_db():
-    conn = sqlite3.connect("winners.db")
-    cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
-                      (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                       name TEXT NOT NULL, 
-                       phone TEXT NOT NULL, 
-                       prize TEXT NOT NULL)''')
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect("winners.db")
+        cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS winners 
+                          (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                           name TEXT NOT NULL, 
+                           phone TEXT NOT NULL, 
+                           prize TEXT NOT NULL)''')
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Database error: {e}")
+    finally:
+        if conn:
+            conn.close()
 
 # Save winner details to the database
 def save_winner(name, phone, prize):
-    conn = sqlite3.connect("winners.db")
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect("winners.db")
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO winners (name, phone, prize) VALUES (?, ?, ?)", (name, phone, prize))
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Failed to save winner: {e}")
+    finally:
+        if conn:
+            conn.close()
 
 # Retrieve all winners from the database
 def get_winners():
-    conn = sqlite3.connect("winners.db")
-    df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)
-    conn.close()
-    return df
+    try:
+        conn = sqlite3.connect("winners.db")
+        df = pd.read_sql("SELECT * FROM winners ORDER BY id DESC", conn)  # Order by latest winners first
+        return df
+    except sqlite3.Error as e:
+        st.error(f"Failed to retrieve winners: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame in case of error
+    finally:
+        if conn:
+            conn.close()
 
 # Initialize the database
 init_db()
 
 # Streamlit UI Setup
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
-
-st.markdown("""
+st.markdown(""" 
     <style>
     .stApp { background-color: #ffebf0; }
     .title { text-align: center; font-size: 40px; color: #e60073; font-weight: bold; }
-    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; text-align: center; }
+    .winner-box { background-color: #ffccdd; padding: 15px; border-radius: 10px; }
+    .spin-wheel-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #spinWheel { width: 70% !important; height: 70% !important; }
+    #spin_btn { background-color: #ff007f; border: none; color: white; padding: 15px 32px; font-size: 18px; cursor: pointer; border-radius: 50px; margin-top: 20px; }
+    #text { font-size: 1.5rem; margin-top: 20px; color: #ff007f; }
+    .arrow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 30px; color: #ff007f; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -51,167 +70,102 @@ st.markdown("<div class='title'>💖 Valentine's Spin & Win 💖</div>", unsafe_
 with st.form("spin_form"):
     name = st.text_input("Enter Your Name", placeholder="John Doe")
     phone = st.text_input("Enter Your Phone Number", placeholder="123-456-7890")
-    submitted = st.form_submit_button("Proceed to Spin")
+    submitted = st.form_submit_button("Spin the Wheel")
+    
+    if submitted:
+        if not name or not phone:
+            st.error("Please enter both your name and phone number.")
+        else:
+            st.success(f"🎉 Good Luck {name}! Spin the wheel and win a prize!")
 
-if submitted:
-    if not name or not phone:
-        st.error("Please enter both your name and phone number.")
-    else:
-        st.session_state["player_name"] = name
-        st.session_state["player_phone"] = phone
-        st.session_state["can_spin"] = True
-        st.success(f"🎉 Welcome {name}! Click below to spin the wheel.")
+            # Spin wheel HTML & JS Integration
+            spin_wheel_html = """
+            <div class="spin-wheel-container">
+                <canvas id="spinWheel"></canvas>
+                <div class="arrow">↑</div>
+                <button id="spin_btn">Spin</button>
+                <div id="text"><p>Good Luck!</p></div>
+            </div>
 
-# HTML + JavaScript for Spin Wheel
-html_code = """
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        .wheel-container { position: relative; display: inline-block; margin-top: 50px;}
-        .pointer {
-            position: absolute;
-            top: -15px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 25px solid black;
-            z-index: 10;
-        }
-        canvas {
-            border-radius: 50%;
-            border: 5px solid #ff4081;
-        }
-        button {
-            padding: 10px 18px;
-            font-size: 16px;
-            background: #ff4081;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-        button:hover { background: #ff0055; }
-        #result {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="300" height="300"></canvas>
-    </div>
-    <br>
-    <button id="spin">🎰 Spin the Wheel</button>
-    <p id="result"></p>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+            <script>
+                const spinWheel = document.getElementById("spinWheel");
+                const spinBtn = document.getElementById("spin_btn");
+                const text = document.getElementById("text");
 
-    <script>
-        const sectors = [
-            { color: "#FF0000", text: "#FFFFFF", label: "Get 20% Off" },
-            { color: "#FF7F00", text: "#FFFFFF", label: "Mystery Box" },
-            { color: "#00FF00", text: "#FFFFFF", label: "Buy 1 Get 1" },
-            { color: "#0000FF", text: "#FFFFFF", label: "Thank You" },
-            { color: "#8B00FF", text: "#FFFFFF", label: "Lipstick" },
-            { color: "#4B0082", text: "#FFFFFF", label: "Voucher" }
-        ];
+                const prizes = ["Lipstick", "Perfume", "Makeup Kit", "Nail Polish", "Face Mask", "Gift Voucher"];
+                const spinColors = ["#E74C3C", "#7D3C98", "#2E86C1", "#138D75", "#F1C40F", "#D35400"];
+                const size = [10, 10, 10, 10, 10, 10];
 
-        const rand = (m, M) => Math.random() * (M - m) + m;
-        const tot = sectors.length;
-        const spinEl = document.querySelector("#spin");
-        const canvas = document.querySelector("#wheel");
-        const ctx = canvas.getContext("2d");
-        const dia = canvas.width;
-        const rad = dia / 2;
-        const PI = Math.PI;
-        const TAU = 2 * PI;
-        const arc = TAU / sectors.length;
+                let spinChart = new Chart(spinWheel, {
+                    type: "pie",
+                    data: {
+                        labels: prizes,
+                        datasets: [{
+                            backgroundColor: spinColors,
+                            data: size,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        rotation: 0,
+                        animation: { duration: 0 },
+                        plugins: {
+                            tooltip: { enabled: false },
+                            legend: { display: false },
+                            datalabels: {
+                                rotation: 90,
+                                color: "#ffffff",
+                                formatter: (_, context) => context.chart.data.labels[context.dataIndex],
+                                font: { size: 18 },
+                            },
+                        },
+                    },
+                });
 
-        const friction = 0.991;
-        let angVel = 0;
-        let ang = 0;
+                const generateValue = (angleValue) => {
+                    const sliceAngle = 360 / prizes.length;
+                    const prizeIndex = Math.floor((angleValue + (sliceAngle / 2)) / sliceAngle) % prizes.length;
+                    text.innerHTML = <p>Congratulations! You won ${prizes[prizeIndex]}</p>;
+                    spinBtn.disabled = false;
 
-        const getIndex = () => Math.floor(tot - (ang / TAU) * tot) % tot;
+                    // Save the winner to Streamlit backend using postMessage
+                    window.parent.postMessage({ "event": "winner", "prize": prizes[prizeIndex] }, "*");
+                };
 
-        function drawSector(sector, i) {
-            const ang = arc * i;
-            ctx.save();
-            ctx.beginPath();
-            ctx.fillStyle = sector.color;
-            ctx.moveTo(rad, rad);
-            ctx.arc(rad, rad, rad, ang, ang + arc);
-            ctx.lineTo(rad, rad);
-            ctx.fill();
-            ctx.translate(rad, rad);
-            ctx.rotate(ang + arc / 2);
-            ctx.textAlign = "right";
-            ctx.fillStyle = sector.text;
-            ctx.font = "bold 18px 'Lato', sans-serif";
-            ctx.fillText(sector.label, rad - 8, 8);
-            ctx.restore();
-        }
+                let count = 0;
+                let resultValue = 101;
+                spinBtn.addEventListener("click", () => {
+                    spinBtn.disabled = true;
+                    text.innerHTML = <p>Best Of Luck!</p>;
+                    let randomDegree = Math.floor(Math.random() * (355 - 0 + 1) + 0);
+                    let rotationInterval = window.setInterval(() => {
+                        spinChart.options.rotation += resultValue;
+                        spinChart.update();
+                        if (spinChart.options.rotation >= 360) {
+                            count += 1;
+                            resultValue -= 5;
+                            spinChart.options.rotation = 0;
+                        } else if (count > 15 && spinChart.options.rotation == randomDegree) {
+                            generateValue(randomDegree);
+                            clearInterval(rotationInterval);
+                            count = 0;
+                            resultValue = 101;
+                        }
+                    }, 10);
+                });
+            </script>
+            """
+            st.components.v1.html(spin_wheel_html, height=600)
 
-        function rotate() {
-            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
-        }
+# Handle Winner Data (Python backend)
+if st.session_state.get('winner'):
+    winner_info = st.session_state['winner']
+    save_winner(name, phone, winner_info['prize'])
+    st.subheader(f"🎉 Congratulations {name}, you won a {winner_info['prize']}! 🎉")
 
-        function frame() {
-            if (!angVel) {
-                const finalSector = sectors[getIndex()];
-                window.prize = finalSector.label;  // Ensure it's set early
-                document.getElementById("result").innerText = `🎉 You won: ${window.prize}`;
-                return;
-            }
-            angVel *= friction;
-            if (angVel < 0.002) angVel = 0;
-            ang += angVel;
-            ang %= TAU;
-            rotate();
-            requestAnimationFrame(frame);
-        }
-
-        function init() {
-            sectors.forEach(drawSector);
-            rotate();
-            spinEl.addEventListener("click", () => {
-                if (!angVel) angVel = rand(0.25, 0.45);
-                requestAnimationFrame(frame);
-            });
-        }
-
-        init();
-    </script>
-</body>
-</html>
-"""
-
-# Embed Spin Wheel
-components.html(html_code, height=600)
-
-# Capture the prize from JavaScript (waiting for the prize to be available)
-prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
-
-# If the prize is captured
-if prize:
-    st.session_state["prize"] = prize
-    st.success(f"🎉 Congratulations! You won: {prize}")
-
-    # Save the winner's information to the database
-    if st.button("Claim Prize"):
-        name = st.session_state.get("player_name", "")
-        phone = st.session_state.get("player_phone", "")
-        prize = st.session_state.get("prize", "")
-
-        if name and phone and prize:
-            save_winner(name, phone, prize)
-            st.success(f"🎉 {name}, your prize has been saved!")
-
-# Display updated winners table
+# Display Recent Winners
+st.subheader("🎊 Recent Winners 🎊")
 winners_df = get_winners()
 if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
