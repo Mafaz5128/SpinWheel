@@ -2,7 +2,6 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import streamlit.components.v1 as components
-from streamlit_js_eval import streamlit_js_eval
 
 # Function to initialize the database
 def init_db():
@@ -193,23 +192,25 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-# Capture the prize from JavaScript (waiting for the prize to be available)
-prize = streamlit_js_eval(js_expressions="window.prize", key="prize_listener", want_output=True)
+# Capture the prize from JavaScript
+if 'prize' not in st.session_state:
+    st.session_state['prize'] = None
 
-# If the prize is captured
-if prize:
-    st.session_state["prize"] = prize
-    st.success(f"🎉 Congratulations! You won: {prize}")
+# Use a form to capture the prize and update the session state
+with st.form("prize_form"):
+    prize = st.text_input("Prize", value=st.session_state.get('prize', ''), disabled=True)
+    claim_prize = st.form_submit_button("Claim Prize")
 
-    # Save the winner's information to the database
-    if st.button("Claim Prize"):
-        name = st.session_state.get("player_name", "")
-        phone = st.session_state.get("player_phone", "")
-        prize = st.session_state.get("prize", "")
+if claim_prize:
+    name = st.session_state.get("player_name", "")
+    phone = st.session_state.get("player_phone", "")
+    prize = st.session_state.get("prize", "")
 
-        if name and phone and prize:
-            save_winner(name, phone, prize)
-            st.success(f"🎉 {name}, your prize has been saved!")
+    if name and phone and prize:
+        save_winner(name, phone, prize)
+        st.success(f"🎉 {name}, your prize has been saved!")
+        st.session_state['prize'] = None  # Reset the prize after claiming
+        st.experimental_rerun()  # Refresh the page to update the winners list
 
 # Display updated winners table
 winners_df = get_winners()
