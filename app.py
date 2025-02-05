@@ -8,6 +8,10 @@ st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
 # Display large greeting message
 st.markdown("<h1 style='text-align: center; color: #e60073;'>💖 Valentine's Spin & Win 💖</h1>", unsafe_allow_html=True)
 
+# Initialize session state for results if not set
+if "results" not in st.session_state:
+    st.session_state["results"] = pd.DataFrame(columns=["Name", "Phone", "Prize"])
+
 # User Input Form
 with st.form("spin_form"):
     name = st.text_input("Enter Your Name", placeholder="John Doe")
@@ -33,22 +37,14 @@ html_code = """
 <head>
     <script>
         function sendPrizeToStreamlit(name, phone, prize) {
-            window.parent.postMessage({ "name": name, "phone": phone, "prize": prize }, "*");
+            const message = { "name": name, "phone": phone, "prize": prize };
+            window.parent.postMessage(message, "*");
         }
         
         window.addEventListener("message", (event) => {
             if (event.data.prize) {
-                var prizeInput = window.parent.document.querySelector("input[aria-label='Your Prize:']");
-                if (prizeInput) {
-                    prizeInput.value = event.data.prize;
-                }
                 document.getElementById("result").innerText = `🎉 Congratulations! You won: ${event.data.prize}`;
-                // Send data to Streamlit
-                window.parent.postMessage({
-                    "name": event.data.name,
-                    "phone": event.data.phone,
-                    "prize": event.data.prize
-                }, "*");
+                sendPrizeToStreamlit(event.data.name, event.data.phone, event.data.prize);
             }
         });
     </script>
@@ -149,7 +145,6 @@ html_code = """
             if (!angVel) {
                 const finalSector = sectors[getIndex()];
                 document.getElementById("result").innerText = `🎉 You won: ${finalSector.label}`;
-                // Send the prize, name, and phone back to Streamlit
                 sendPrizeToStreamlit('John Doe', '123-456-7890', finalSector.label);
                 return;
             }
@@ -179,3 +174,6 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
+# Display results
+st.subheader("📜 Spin Results")
+st.dataframe(st.session_state["results"])
