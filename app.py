@@ -192,7 +192,7 @@ html_code = """
 # Embed Spin Wheel
 components.html(html_code, height=600)
 
-prize = st.experimental_get_query_params().get("prize", [None])[0]
+prize = st.query_params.get("prize", [None])[0]
 
 if prize:
     st.session_state["prize"] = prize
@@ -209,3 +209,4 @@ if not winners_df.empty:
     st.table(winners_df[['name', 'phone', 'prize']])
 else:
     st.info("No winners yet. Be the first to spin the wheel!")
+
