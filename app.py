@@ -156,7 +156,7 @@ html_code = f"""
         }}
 
         function rotate() {{
-            canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
+            canvas.style.transform = "rotate(" + (ang - PI / 2) + "rad)";
         }}
 
         function frame() {{
