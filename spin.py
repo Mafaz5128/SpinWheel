@@ -321,12 +321,17 @@ html_code = """
 </body>
 </html>
 """
+st.components.v1.html(html_code, height=1000, scrolling=True)
 st.markdown(
     """
     <style>
+    /* Hide the hamburger menu and sidebar */
+    .css-1d391kg {visibility: hidden;}
+    .css-1e5imtd {display: none;}  /* sidebar */
+    
+    /* Hide Streamlit's footer */
     footer {visibility: hidden;}
     </style>
     """,
     unsafe_allow_html=True
 )
-st.components.v1.html(html_code, height=1000, scrolling=True)
