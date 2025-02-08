@@ -149,7 +149,7 @@ html_code = """
 
     <div class="wheel-container">
         <div class="pointer"></div>
-        <canvas id="wheel" width="500" height="500"></canvas>
+        <canvas id="wheel" width="300" height="300"></canvas>
     </div>
 
     <br>
@@ -299,4 +299,4 @@ html_code = """
 """
 
 # Embed HTML in Streamlit
-st.components.v1.html(html_code, height=5000, scrolling=True)
+st.components.v1.html(html_code, height=800, scrolling=True)
