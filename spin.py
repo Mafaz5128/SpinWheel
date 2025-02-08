@@ -2,7 +2,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
-# HTML and CSS for the Spin Wheel App
 html_code = """
 <!DOCTYPE html>
 <html lang="en">
@@ -116,8 +115,6 @@ html_code = """
             { color: "#4B0082", text: "#FFFFFF", label: "LKR 5000 Voucher 💵" }
         ];
 
-        const weights = [2, 1, 1, 1, 1, 1]; // Adjusted for better balance
-
         const canvas = document.querySelector("#wheel");
         const ctx = canvas.getContext("2d");
         const dia = canvas.width;
@@ -129,19 +126,6 @@ html_code = """
         let angVel = 0;
         let ang = 0;
         const friction = 0.98;
-
-        function getWeightedIndex() {
-            let totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-            let randomWeight = Math.random() * totalWeight;
-            let accumulatedWeight = 0;
-            for (let i = 0; i < weights.length; i++) {
-                accumulatedWeight += weights[i];
-                if (randomWeight < accumulatedWeight) {
-                    return i;
-                }
-            }
-            return 0;
-        }
 
         function drawSector(sector, i) {
             const ang = arc * i;
@@ -174,7 +158,7 @@ html_code = """
                 requestAnimationFrame(frame);
             } else {
                 angVel = 0;
-                let winningIndex = getWeightedIndex();
+                let winningIndex = 3; // CHOOSE THE PRIZE INDEX HERE (0-5)
                 let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
                 ang = winningAngle;
                 rotate();
