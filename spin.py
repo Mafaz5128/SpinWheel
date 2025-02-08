@@ -141,6 +141,7 @@ html_code = """
                 left: 50%;
             }
         }
+        footer {visibility : hidden;}
     </style>
 </head>
 <body>
