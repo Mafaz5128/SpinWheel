@@ -175,7 +175,7 @@ html_code = """
 
     <div class="wheel-container">
         <div class="pointer"></div>
-        <canvas id="wheel" width="400" height="400"></canvas>
+        <canvas id="wheel" width="500" height="500"></canvas>
     </div>
 
     <br>
