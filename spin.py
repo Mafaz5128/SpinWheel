@@ -143,8 +143,8 @@ html_code = """
         }
 
         /* Hide Streamlit header and footer */
-        header {display: none;}
-        footer {display: none;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
     </style>
 </head>
 <body>
@@ -314,6 +314,7 @@ html_code = """
 
 </body>
 </html>
+"""
 """
 
 # Embed HTML in Streamlit
