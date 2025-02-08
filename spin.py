@@ -25,16 +25,6 @@ html_code = """
             display: inline-block;
             margin-top: 50px;
         }
-        .pointer {
-            position: absolute;
-            top: -15px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 25px solid black;
-            z-index: 10;
-        }
         canvas {
             border-radius: 50%;
             border: 5px solid #ff4081;
@@ -166,18 +156,6 @@ html_code = """
     <br>
     <button id="spinBtn" onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
-
-    <h2>🎖 Winners List 🎖</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Prize Won</th>
-                <th>Coupon Code</th>
-            </tr>
-        </thead>
-        <tbody id="winnersTable"></tbody>
-    </table>
 
     <script>
         let playerName = "";
