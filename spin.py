@@ -68,6 +68,13 @@ html_code = """
             animation: floatHeart 4s infinite ease-in-out, moveHeart 7s linear infinite;
         }
 
+        /* New highlight class for selected sector */
+        .highlight {
+            box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.8);
+            transform: scale(1.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
         @keyframes floatBalloon {
             0% {
                 bottom: -80px;
@@ -239,11 +246,12 @@ html_code = """
 
         function frame() {
             if (!angVel) {
-                const finalSector = sectors[getIndex()];
+                const selectedSectorIndex = getIndex();
+                highlightSelectedSector(selectedSectorIndex); // Highlight selected sector
+                const finalSector = sectors[selectedSectorIndex];
                 let couponCode = generateCouponCode();
                 document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
                 document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94784727313' target='_blank'>WhatsApp</a> to claim your prize!`;
-                // Save winner data
                 return;
             }
             angVel *= friction;
@@ -281,10 +289,20 @@ html_code = """
             }
         }
 
+        function highlightSelectedSector(sectorIndex) {
+            const sectorsElements = document.querySelectorAll('.sector');
+            sectorsElements.forEach((sector, index) => {
+                if (index === sectorIndex) {
+                    sector.classList.add('highlight');  // Apply highlight effect on the selected sector
+                } else {
+                    sector.classList.remove('highlight');
+                }
+            });
+        }
+
         function init() {
             sectors.forEach(drawSector);
             rotate();
-            updateWinnersTable();
         }
 
         init();
