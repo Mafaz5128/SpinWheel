@@ -159,6 +159,7 @@ html_code = """
     <p id="instructions"></p>
     <script>
         let playerName = "";
+        let playerPhone = "";
         let winnersList = JSON.parse(localStorage.getItem('winnersList')) || [];
 
         function generateCouponCode() {
