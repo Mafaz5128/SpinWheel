@@ -27,12 +27,13 @@ html_code = """
         }
         .pointer {
             position: absolute;
-            top: -15px; left: 50%;
+            top: -10px;
+            left: 50%;
             transform: translateX(-50%);
             width: 0; height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 25px solid black;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid black;
             z-index: 10;
         }
         canvas {
@@ -63,102 +64,6 @@ html_code = """
             color: #ff4081;
             margin-top: 20px;
         }
-        table {
-            width: 70%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ff4081;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background: #ff4081;
-            color: white;
-        }
-        .balloon {
-            position: absolute;
-            width: 50px;
-            height: 80px;
-            background-color: #4169E1;
-            border-radius: 50%;
-            animation: floatBalloon 5s infinite ease-in-out, moveBalloon 10s linear infinite;
-        }
-        .heart {
-            position: absolute;
-            font-size: 40px;
-            color: red;
-            animation: floatHeart 4s infinite ease-in-out, moveHeart 7s linear infinite;
-        }
-
-        @keyframes floatBalloon {
-            0% {
-                bottom: -80px;
-                left: 50%;
-                opacity: 1;
-            }
-            100% {
-                bottom: 100%;
-                left: 50%;
-                opacity: 0.5;
-            }
-        }
-
-        @keyframes moveBalloon {
-            0% {
-                left: 50%;
-                transform: rotate(0deg);
-            }
-            25% {
-                left: 60%;
-                transform: rotate(15deg);
-            }
-            50% {
-                left: 40%;
-                transform: rotate(-15deg);
-            }
-            75% {
-                left: 30%;
-                transform: rotate(10deg);
-            }
-            100% {
-                left: 50%;
-                transform: rotate(0deg);
-            }
-        }
-
-        @keyframes floatHeart {
-            0% {
-                bottom: -50px;
-                left: 50%;
-                opacity: 1;
-            }
-            100% {
-                bottom: 100%;
-                left: 50%;
-                opacity: 0.5;
-            }
-        }
-
-        @keyframes moveHeart {
-            0% {
-                left: 50%;
-            }
-            25% {
-                left: 60%;
-            }
-            50% {
-                left: 40%;
-            }
-            75% {
-                left: 20%;
-            }
-            100% {
-                left: 50%;
-            }
-        }
     </style>
 </head>
 <body>
@@ -182,11 +87,9 @@ html_code = """
     <button id="spinBtn" onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
 
-
     <script>
         let playerName = "";
         let playerPhone = "";
-        let winnersList = JSON.parse(localStorage.getItem('winnersList')) || [];
 
         function generateCouponCode() {
             return 'VC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -201,7 +104,6 @@ html_code = """
                 return;
             }
             document.getElementById("goodLuck").innerText = `Good luck, ${playerName}! Click below to spin the wheel.`;
-            showBalloonsAndHearts();
         }
 
         const sectors = [
@@ -213,27 +115,23 @@ html_code = """
             { color: "#4B0082", text: "#FFFFFF", label: "LKR 5000 Voucher 💵" }
         ];
 
-        // Define weights for each prize. The higher the number, the more likely it is to be chosen.
-        const weights = [1, 1, 1, 0, 0, 0]; // The second prize (Free Delivery) has a weight of 0, meaning it will never be selected
+        const weights = [2, 1, 1, 0, 0, 0]; // Weighted probability
 
-        const rand = (m, M) => Math.random() * (M - m) + m;
-        const tot = sectors.length;
         const canvas = document.querySelector("#wheel");
         const ctx = canvas.getContext("2d");
         const dia = canvas.width;
         const rad = dia / 2;
         const PI = Math.PI;
         const TAU = 2 * PI;
-        const arc = TAU / tot;
+        const arc = TAU / sectors.length;
 
         let angVel = 0;
         let ang = 0;
-        const friction = 0.991;
-        const getIndex = () => {
-            let totalWeight = weights.reduce((sum, weight) => sum + weight, 0); // Calculate total weight
-            let randomWeight = Math.random() * totalWeight; // Select a random weight
+        const friction = 0.99;
 
-            // Find the index based on the random weight
+        function getWeightedIndex() {
+            let totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+            let randomWeight = Math.random() * totalWeight;
             let accumulatedWeight = 0;
             for (let i = 0; i < weights.length; i++) {
                 accumulatedWeight += weights[i];
@@ -241,8 +139,8 @@ html_code = """
                     return i;
                 }
             }
-            return 0; // Default case if no index is found (shouldn't happen)
-        };
+            return 0;
+        }
 
         function drawSector(sector, i) {
             const ang = arc * i;
@@ -268,17 +166,20 @@ html_code = """
 
         function frame() {
             if (!angVel) {
-                const finalSector = sectors[getIndex()];
+                let winningIndex = getWeightedIndex();
+                let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
+                let finalRotation = winningAngle + TAU * Math.floor(Math.random() * 3);
+
+                ang = finalRotation;
+                rotate();
+
+                let finalSector = sectors[winningIndex];
                 let couponCode = generateCouponCode();
                 document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
-                
-                // Save winner data
-                winnersList.push({ name: playerName, prize: finalSector.label, code: couponCode });
-                localStorage.setItem('winnersList', JSON.stringify(winnersList));
-                updateWinnersTable();
 
                 return;
             }
+
             angVel *= friction;
             if (angVel < 0.002) angVel = 0;
             ang += angVel;
@@ -292,32 +193,13 @@ html_code = """
                 alert("Please enter your details first.");
                 return;
             }
-            if (!angVel) angVel = rand(0.25, 0.45);
+            angVel = Math.random() * 0.4 + 0.25;
             requestAnimationFrame(frame);
-        }
-
-        function showBalloonsAndHearts() {
-            for (let i = 0; i < 5; i++) {
-                const balloon = document.createElement("div");
-                balloon.classList.add("balloon");
-                balloon.style.left = `${Math.random() * 100}%`;
-                balloon.style.animationDuration = `${Math.random() * 2 + 4}s`;
-                document.body.appendChild(balloon);
-            }
-            for (let i = 0; i < 3; i++) {
-                const heart = document.createElement("div");
-                heart.classList.add("heart");
-                heart.innerText = "❤️";
-                heart.style.left = `${Math.random() * 100}%`;
-                heart.style.animationDuration = `${Math.random() * 2 + 4}s`;
-                document.body.appendChild(heart);
-            }
         }
 
         function init() {
             sectors.forEach(drawSector);
             rotate();
-            updateWinnersTable();
         }
 
         init();
