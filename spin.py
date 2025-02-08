@@ -170,7 +170,7 @@ html_code = """
             playerName = document.getElementById("name").value;
             playerPhone = document.getElementById("phone").value;
 
-            if (!playerName {
+            if (!playerName || !playerPhone) {
                 alert("Please enter your name and phone number.");
                 return;
             }
