@@ -141,8 +141,10 @@ html_code = """
                 left: 50%;
             }
         }
-        footer {display : none;}
-        header {display : none;}
+
+        /* Hide Streamlit header and footer */
+        header {display: none;}
+        footer {display: none;}
     </style>
 </head>
 <body>
