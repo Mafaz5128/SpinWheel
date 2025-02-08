@@ -142,6 +142,7 @@ html_code = """
             }
         }
         footer {visibility : hidden;}
+        header {visibility : hidden;}
     </style>
 </head>
 <body>
