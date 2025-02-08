@@ -216,12 +216,12 @@ html_code = """
         }
 
         const sectors = [
-            { color: "#FF0000", text: "#FFFFFF", label: "20% OFF" },
-            { color: "#FF7F00", text: "#FFFFFF", label: "Free Delivery" },
-            { color: "#00FF00", text: "#FFFFFF", label: "Win a Perfume!" },
-            { color: "#0000FF", text: "#FFFFFF", label: "BOGO – Any Item!" },
-            { color: "#8B00FF", text: "#FFFFFF", label: "Couple Watch!" },
-            { color: "#4B0082", text: "#FFFFFF", label: "LKR 5000 Voucher" }
+            { color: "#FF0000", text: "#FFFFFF", label: "20% OFF 🎉" },
+            { color: "#FF7F00", text: "#FFFFFF", label: "Free Delivery 🚚" },
+            { color: "#00FF00", text: "#FFFFFF", label: "Win a Perfume! 💐" },
+            { color: "#0000FF", text: "#FFFFFF", label: "BOGO – Any Item! 🛍️" },
+            { color: "#8B00FF", text: "#FFFFFF", label: "Couple Watch! ⌚" },
+            { color: "#4B0082", text: "#FFFFFF", label: "LKR 5000 Voucher 💵" }
         ];
 
         const rand = (m, M) => Math.random() * (M - m) + m;
