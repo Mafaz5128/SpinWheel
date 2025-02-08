@@ -142,7 +142,6 @@ html_code = """
 
     <div>
         <input type="text" id="name" placeholder="Enter Your Name">
-        <input type="text" id="phone" placeholder="Enter Your Phone Number">
         <button onclick="startSpin()">Proceed to Spin</button>
     </div>
 
@@ -159,7 +158,6 @@ html_code = """
     <p id="instructions"></p>
     <script>
         let playerName = "";
-        let playerPhone = "";
         let winnersList = JSON.parse(localStorage.getItem('winnersList')) || [];
 
         function generateCouponCode() {
@@ -168,10 +166,9 @@ html_code = """
 
         function startSpin() {
             playerName = document.getElementById("name").value;
-            playerPhone = document.getElementById("phone").value;
 
-            if (!playerName || !playerPhone) {
-                alert("Please enter your name and phone number.");
+            if (!playerName) {
+                alert("Please enter your name.");
                 return;
             }
             document.getElementById("goodLuck").innerText = `Good luck, ${playerName}! Click below to spin the wheel.`;
@@ -262,8 +259,8 @@ html_code = """
         }
 
         function spinWheel() {
-            if (!playerName || !playerPhone) {
-                alert("Please enter your details first.");
+            if (!playerName) {
+                alert("Please enter your name first.");
                 return;
             }
             if (!angVel) angVel = rand(0.25, 0.45);
