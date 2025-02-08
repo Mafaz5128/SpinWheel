@@ -182,17 +182,6 @@ html_code = """
     <button id="spinBtn" onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
 
-    <h2>🎖 Winners List 🎖</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Prize Won</th>
-                <th>Coupon Code</th>
-            </tr>
-        </thead>
-        <tbody id="winnersTable"></tbody>
-    </table>
 
     <script>
         let playerName = "";
@@ -305,15 +294,6 @@ html_code = """
             }
             if (!angVel) angVel = rand(0.25, 0.45);
             requestAnimationFrame(frame);
-        }
-
-        function updateWinnersTable() {
-            const tableBody = document.getElementById("winnersTable");
-            tableBody.innerHTML = "";
-            winnersList.forEach(winner => {
-                let row = `<tr><td>${winner.name}</td><td>${winner.prize}</td><td>${winner.code}</td></tr>`;
-                tableBody.innerHTML += row;
-            });
         }
 
         function showBalloonsAndHearts() {
