@@ -86,6 +86,7 @@ html_code = """
     <br>
     <button id="spinBtn" onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
+    <p id="instructions"></p>
 
     <script>
         let playerName = "";
@@ -176,7 +177,7 @@ html_code = """
                 let finalSector = sectors[winningIndex];
                 let couponCode = generateCouponCode();
                 document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
-
+                document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94701234567' target='_blank'>WhatsApp</a> to claim your prize!`;
                 return;
             }
 
