@@ -2,6 +2,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
+
+# HTML and JavaScript Code for the Spin Wheel
 html_code = """
 <!DOCTYPE html>
 <html lang="en">
@@ -125,7 +127,7 @@ html_code = """
 
         let angVel = 0;
         let ang = 0;
-        const friction = 0.98;
+        const friction = 0.99;
 
         function drawSector(sector, i) {
             const ang = arc * i;
@@ -158,7 +160,7 @@ html_code = """
                 requestAnimationFrame(frame);
             } else {
                 angVel = 0;
-                let winningIndex = 3; // CHOOSE THE PRIZE INDEX HERE (0-5)
+                let winningIndex = Math.floor(Math.random() * sectors.length); // Random index
                 let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
                 ang = winningAngle;
                 rotate();
@@ -175,7 +177,7 @@ html_code = """
                 alert("Please enter your details first.");
                 return;
             }
-            angVel = Math.random() * 0.4 + 0.25;
+            angVel = Math.random() * 0.4 + 0.25; // Random velocity for a more dynamic spin
             requestAnimationFrame(frame);
         }
 
