@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Valentine Spin Wheel", layout="wide")
+
 # HTML and CSS for the Spin Wheel App
 html_code = """
 <!DOCTYPE html>
@@ -11,6 +12,15 @@ html_code = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Valentine's Spin Wheel</title>
     <style>
+        /* Hide the Streamlit header and footer */
+        header, .css-1v3fvcr { 
+            display: none; 
+        }
+
+        footer, .css-1n7v3iw { 
+            display: none; 
+        }
+
         body {
             text-align: center;
             font-family: Arial, sans-serif;
@@ -141,10 +151,6 @@ html_code = """
                 left: 50%;
             }
         }
-
-        /* Hide Streamlit header and footer */
-        header {visibility: hidden;}
-        footer {visibility: hidden;}
     </style>
 </head>
 <body>
