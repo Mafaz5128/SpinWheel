@@ -168,6 +168,7 @@ html_code = """
 
         function startSpin() {
             playerName = document.getElementById("name").value;
+            playerPhone = document.getElementById("phone").value;
 
             if (!playerName {
                 alert("Please enter your name and phone number.");
