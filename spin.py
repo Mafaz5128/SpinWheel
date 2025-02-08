@@ -315,7 +315,5 @@ html_code = """
 </body>
 </html>
 """
-"""
-
 # Embed HTML in Streamlit
 st.components.v1.html(html_code, height=1000, scrolling=True)
