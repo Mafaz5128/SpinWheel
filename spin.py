@@ -125,10 +125,7 @@ html_code = """
         const TAU = 2 * PI;
         const arc = TAU / sectors.length;
 
-        let angVel = 0;
         let ang = 0;
-        const friction = 0.99;
-        let spinning = false;
 
         function drawSector(sector, i) {
             const ang = arc * i;
@@ -152,38 +149,26 @@ html_code = """
             canvas.style.transform = `rotate(${ang - PI / 2}rad)`;
         }
 
-        function frame() {
-            if (spinning) {
-                angVel *= friction; // Smooth deceleration
-                if (angVel < 0.005) { // Once speed is low, stop
-                    angVel = 0;
-                    let winningIndex = Math.floor(Math.random() * sectors.length); // Random index for prize
-                    let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
-                    ang = winningAngle; // Land on the random prize
-                    rotate();
-
-                    let finalSector = sectors[winningIndex];
-                    let couponCode = generateCouponCode();
-                    document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
-                    document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94701234567' target='_blank'>WhatsApp</a> to claim your prize!`;
-                    spinning = false;
-                } else {
-                    ang += angVel;
-                    ang %= TAU;
-                    rotate();
-                    requestAnimationFrame(frame); // Keep spinning
-                }
-            }
-        }
-
         function spinWheel() {
             if (!playerName || !playerPhone) {
                 alert("Please enter your details first.");
                 return;
             }
-            spinning = true;
-            angVel = Math.random() * 0.4 + 0.25; // Random starting speed
-            requestAnimationFrame(frame); // Start spinning
+
+            // Generate a random number for the prize
+            const randomPrizeIndex = Math.floor(Math.random() * sectors.length);
+
+            // Set the number of rotations
+            let rotations = Math.floor(Math.random() * 3) + 3; // Random between 3 and 5 rotations
+
+            // Calculate the final angle based on the random prize
+            let finalAngle = (randomPrizeIndex * arc) + (arc / 2) + (TAU * rotations);
+            ang = finalAngle;
+
+            // Spin the wheel and stop
+            rotate();
+            document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${sectors[randomPrizeIndex].label} (Coupon Code: ${generateCouponCode()})`;
+            document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94701234567' target='_blank'>WhatsApp</a> to claim your prize!`;
         }
 
         function init() {
