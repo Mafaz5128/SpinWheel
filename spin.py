@@ -116,7 +116,7 @@ html_code = """
             { color: "#4B0082", text: "#FFFFFF", label: "LKR 5000 Voucher 💵" }
         ];
 
-        const weights = [2, 1, 1, 0, 0, 0]; // Weighted probability
+        const weights = [2, 1, 1, 1, 1, 1]; // Adjusted for better balance
 
         const canvas = document.querySelector("#wheel");
         const ctx = canvas.getContext("2d");
@@ -128,7 +128,7 @@ html_code = """
 
         let angVel = 0;
         let ang = 0;
-        const friction = 0.99;
+        const friction = 0.98;
 
         function getWeightedIndex() {
             let totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
@@ -166,27 +166,24 @@ html_code = """
         }
 
         function frame() {
-            if (!angVel) {
+            if (angVel > 0.002) {
+                angVel *= friction; // Smooth slowing down
+                ang += angVel;
+                ang %= TAU;
+                rotate();
+                requestAnimationFrame(frame);
+            } else {
+                angVel = 0;
                 let winningIndex = getWeightedIndex();
                 let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
-                let finalRotation = winningAngle + TAU * Math.floor(Math.random() * 3);
-
-                ang = finalRotation;
+                ang = winningAngle;
                 rotate();
 
                 let finalSector = sectors[winningIndex];
                 let couponCode = generateCouponCode();
                 document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
                 document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94701234567' target='_blank'>WhatsApp</a> to claim your prize!`;
-                return;
             }
-
-            angVel *= friction;
-            if (angVel < 0.002) angVel = 0;
-            ang += angVel;
-            ang %= TAU;
-            rotate();
-            requestAnimationFrame(frame);
         }
 
         function spinWheel() {
@@ -209,6 +206,5 @@ html_code = """
 </body>
 </html>
 """
-
 # Embed HTML in Streamlit
 st.components.v1.html(html_code, height=1000, scrolling=True)
