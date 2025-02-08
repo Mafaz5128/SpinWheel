@@ -63,21 +63,6 @@ html_code = """
             color: #ff4081;
             margin-top: 20px;
         }
-        table {
-            width: 70%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ff4081;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background: #ff4081;
-            color: white;
-        }
         .balloon {
             position: absolute;
             width: 50px;
@@ -305,15 +290,6 @@ html_code = """
             }
             if (!angVel) angVel = rand(0.25, 0.45);
             requestAnimationFrame(frame);
-        }
-
-        function updateWinnersTable() {
-            const tableBody = document.getElementById("winnersTable");
-            tableBody.innerHTML = "";
-            winnersList.forEach(winner => {
-                let row = `<tr><td>${winner.name}</td><td>${winner.prize}</td><td>${winner.code}</td></tr>`;
-                tableBody.innerHTML += row;
-            });
         }
 
         function showBalloonsAndHearts() {
