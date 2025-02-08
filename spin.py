@@ -141,8 +141,8 @@ html_code = """
                 left: 50%;
             }
         }
-        footer {visibility : hidden;}
-        header {visibility : hidden;}
+        footer {display : none;}
+        header {display : none;}
     </style>
 </head>
 <body>
