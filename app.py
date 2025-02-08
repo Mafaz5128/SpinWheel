@@ -25,16 +25,6 @@ html_code = """
             display: inline-block;
             margin-top: 50px;
         }
-        .pointer {
-            position: absolute;
-            top: -15px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 25px solid black;
-            z-index: 10;
-        }
         canvas {
             border-radius: 50%;
             border: 5px solid #ff4081;
@@ -62,21 +52,6 @@ html_code = """
             font-weight: bold;
             color: #ff4081;
             margin-top: 20px;
-        }
-        table {
-            width: 70%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background: white;
-        }
-        th, td {
-            border: 1px solid #ff4081;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background: #ff4081;
-            color: white;
         }
         .balloon {
             position: absolute;
@@ -167,7 +142,6 @@ html_code = """
 
     <div>
         <input type="text" id="name" placeholder="Enter Your Name">
-        <input type="text" id="phone" placeholder="Enter Your Phone Number">
         <button onclick="startSpin()">Proceed to Spin</button>
     </div>
 
@@ -175,28 +149,15 @@ html_code = """
 
     <div class="wheel-container">
         <div class="pointer"></div>
-        <canvas id="wheel" width="500" height="500"></canvas>
+        <canvas id="wheel" width="300" height="300"></canvas>
     </div>
 
     <br>
     <button id="spinBtn" onclick="spinWheel()">🎰 Spin the Wheel</button>
     <p id="result"></p>
-
-    <h2>🎖 Winners List 🎖</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Prize Won</th>
-                <th>Coupon Code</th>
-            </tr>
-        </thead>
-        <tbody id="winnersTable"></tbody>
-    </table>
-
+    <p id="instructions"></p>
     <script>
         let playerName = "";
-        let playerPhone = "";
         let winnersList = JSON.parse(localStorage.getItem('winnersList')) || [];
 
         function generateCouponCode() {
@@ -205,10 +166,9 @@ html_code = """
 
         function startSpin() {
             playerName = document.getElementById("name").value;
-            playerPhone = document.getElementById("phone").value;
 
-            if (!playerName || !playerPhone) {
-                alert("Please enter your name and phone number.");
+            if (!playerName) {
+                alert("Please enter your name.");
                 return;
             }
             document.getElementById("goodLuck").innerText = `Good luck, ${playerName}! Click below to spin the wheel.`;
@@ -268,7 +228,7 @@ html_code = """
             ctx.rotate(ang + arc / 2);
             ctx.textAlign = "right";
             ctx.fillStyle = sector.text;
-            ctx.font = "bold 18px Arial";
+            ctx.font = "bold 10px Arial";
             ctx.fillText(sector.label, rad - 10, 10);
             ctx.restore();
         }
@@ -282,12 +242,8 @@ html_code = """
                 const finalSector = sectors[getIndex()];
                 let couponCode = generateCouponCode();
                 document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
-                
+                document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94784727313' target='_blank'>WhatsApp</a> to claim your prize!`;
                 // Save winner data
-                winnersList.push({ name: playerName, prize: finalSector.label, code: couponCode });
-                localStorage.setItem('winnersList', JSON.stringify(winnersList));
-                updateWinnersTable();
-
                 return;
             }
             angVel *= friction;
@@ -299,21 +255,12 @@ html_code = """
         }
 
         function spinWheel() {
-            if (!playerName || !playerPhone) {
-                alert("Please enter your details first.");
+            if (!playerName) {
+                alert("Please enter your name first.");
                 return;
             }
             if (!angVel) angVel = rand(0.25, 0.45);
             requestAnimationFrame(frame);
-        }
-
-        function updateWinnersTable() {
-            const tableBody = document.getElementById("winnersTable");
-            tableBody.innerHTML = "";
-            winnersList.forEach(winner => {
-                let row = `<tr><td>${winner.name}</td><td>${winner.prize}</td><td>${winner.code}</td></tr>`;
-                tableBody.innerHTML += row;
-            });
         }
 
         function showBalloonsAndHearts() {
@@ -348,4 +295,4 @@ html_code = """
 """
 
 # Embed HTML in Streamlit
-st.components.v1.html(html_code, height=5000, scrolling=True)
+st.components.v1.html(html_code, height=1000, scrolling=True)
