@@ -128,6 +128,7 @@ html_code = """
         let angVel = 0;
         let ang = 0;
         const friction = 0.99;
+        let spinning = false;
 
         function drawSector(sector, i) {
             const ang = arc * i;
@@ -152,23 +153,26 @@ html_code = """
         }
 
         function frame() {
-            if (angVel > 0.002) {
-                angVel *= friction; // Smooth slowing down
-                ang += angVel;
-                ang %= TAU;
-                rotate();
-                requestAnimationFrame(frame);
-            } else {
-                angVel = 0;
-                let winningIndex = Math.floor(Math.random() * sectors.length); // Random index
-                let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
-                ang = winningAngle;
-                rotate();
+            if (spinning) {
+                angVel *= friction; // Smooth deceleration
+                if (angVel < 0.005) { // Once speed is low, stop
+                    angVel = 0;
+                    let winningIndex = Math.floor(Math.random() * sectors.length); // Random index for prize
+                    let winningAngle = TAU - (winningIndex * arc) - (arc / 2);
+                    ang = winningAngle; // Land on the random prize
+                    rotate();
 
-                let finalSector = sectors[winningIndex];
-                let couponCode = generateCouponCode();
-                document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
-                document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94701234567' target='_blank'>WhatsApp</a> to claim your prize!`;
+                    let finalSector = sectors[winningIndex];
+                    let couponCode = generateCouponCode();
+                    document.getElementById("result").innerText = `🎉 Congratulations ${playerName}! You won: ${finalSector.label} (Code: ${couponCode})`;
+                    document.getElementById("instructions").innerHTML = `📸 Take a screenshot and send it to Shop4me.lk on <a href='https://wa.me/94701234567' target='_blank'>WhatsApp</a> to claim your prize!`;
+                    spinning = false;
+                } else {
+                    ang += angVel;
+                    ang %= TAU;
+                    rotate();
+                    requestAnimationFrame(frame); // Keep spinning
+                }
             }
         }
 
@@ -177,8 +181,9 @@ html_code = """
                 alert("Please enter your details first.");
                 return;
             }
-            angVel = Math.random() * 0.4 + 0.25; // Random velocity for a more dynamic spin
-            requestAnimationFrame(frame);
+            spinning = true;
+            angVel = Math.random() * 0.4 + 0.25; // Random starting speed
+            requestAnimationFrame(frame); // Start spinning
         }
 
         function init() {
