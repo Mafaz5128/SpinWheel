@@ -158,7 +158,6 @@ html_code = """
     <p id="instructions"></p>
     <script>
         let playerName = "";
-        let playerPhone = "";
         let winnersList = JSON.parse(localStorage.getItem('winnersList')) || [];
 
         function generateCouponCode() {
@@ -167,9 +166,8 @@ html_code = """
 
         function startSpin() {
             playerName = document.getElementById("name").value;
-            playerPhone = document.getElementById("phone").value;
 
-            if (!playerName || !playerPhone) {
+            if (!playerName {
                 alert("Please enter your name and phone number.");
                 return;
             }
