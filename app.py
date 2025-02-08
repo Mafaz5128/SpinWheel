@@ -53,7 +53,7 @@ html_code = """
         });
 
         function spinWheel() {
-            const prizes = ["Get 20% Off", "Mystery Box", "Buy 1 Get 1", "Thank You", "Lipstick", "Voucher"];
+            const prizes = ["20% OFF", "Free Delivery", "Win a Perfume!", "BOGO – Any Item!", "Couple Watch!", "LKR 5000 Voucher"];
             const selectedPrize = prizes[Math.floor(Math.random() * prizes.length)];
             document.getElementById("result").innerText = `🎉 You won: ${selectedPrize}`;
             sendPrizeToStreamlit('""" + st.session_state.get("player_name", "Unknown") + """', 
