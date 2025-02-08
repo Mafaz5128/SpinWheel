@@ -225,7 +225,7 @@ html_code = """
         ];
 
         // Define weights for each prize. The higher the number, the more likely it is to be chosen.
-        const weights = [1, 0, 1, 1, 3, 1]; // The second prize (Free Delivery) has a weight of 0, meaning it will never be selected
+        const weights = [1, 1, 1, 0, 0, 0]; // The second prize (Free Delivery) has a weight of 0, meaning it will never be selected
 
         const rand = (m, M) => Math.random() * (M - m) + m;
         const tot = sectors.length;
