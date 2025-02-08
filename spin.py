@@ -142,6 +142,7 @@ html_code = """
 
     <div>
         <input type="text" id="name" placeholder="Enter Your Name">
+        <input type="text" id="phone" placeholder="Enter Your Phone Number">
         <button onclick="startSpin()">Proceed to Spin</button>
     </div>
 
