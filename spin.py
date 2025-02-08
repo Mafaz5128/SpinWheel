@@ -328,4 +328,4 @@ html_code = """
 """
 
 # Embed HTML in Streamlit
-st.components.v1.html(html_code, height=5000, scrolling=True)
+st.components.v1.html(html_code, height=1000, scrolling=True)
