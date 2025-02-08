@@ -228,7 +228,7 @@ html_code = """
             ctx.rotate(ang + arc / 2);
             ctx.textAlign = "right";
             ctx.fillStyle = sector.text;
-            ctx.font = "bold 12px Arial";
+            ctx.font = "bold 10px Arial";
             ctx.fillText(sector.label, rad - 10, 10);
             ctx.restore();
         }
